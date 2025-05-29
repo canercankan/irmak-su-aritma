@@ -1674,4 +1674,6 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Veritabanı hatası: {e}")
     
-    app.run(host='0.0.0.0', port=9292, debug=True)
+    # Railway için port ayarı
+    port = int(os.environ.get('PORT', 9292))
+    app.run(host='0.0.0.0', port=port, debug=False)

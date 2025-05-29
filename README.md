@@ -97,3 +97,5 @@ cenap/
 ## Lisans
 
 Bu proje özel kullanım içindir. 
+
+# Railway Deployment Test

@@ -1,0 +1,348 @@
+{% extends "base.html" %}
+
+{% block title %}Sipariş Ver - Irmak Su Arıtma{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2><i class="fas fa-credit-card"></i> Sipariş Ver</h2>
+    
+    <div class="row">
+        <!-- Sipariş Formu -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Sipariş Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <form id="checkoutForm">
+                        <!-- Teslimat Adresi -->
+                        <div class="mb-4">
+                            <h6><i class="fas fa-map-marker-alt"></i> Teslimat Adresi</h6>
+                            {% if customer.addresses %}
+                                <div class="row">
+                                    {% for address in customer.addresses %}
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card address-card {% if address.is_default %}border-primary{% endif %}" 
+                                             onclick="selectAddress({{ address.id }})" 
+                                             style="cursor: pointer;">
+                                            <div class="card-body">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="address_id" 
+                                                           value="{{ address.id }}" id="address{{ address.id }}"
+                                                           {% if address.is_default %}checked{% endif %}>
+                                                    <label class="form-check-label w-100" for="address{{ address.id }}">
+                                                        <strong>{{ address.title }}</strong>
+                                                        {% if address.is_default %}
+                                                            <span class="badge bg-primary ms-2">Varsayılan</span>
+                                                        {% endif %}
+                                                        <br>
+                                                        <small>{{ address.first_name }} {{ address.last_name }}</small><br>
+                                                        <small>{{ address.phone }}</small><br>
+                                                        <small class="text-muted">{{ address.address_line }}</small><br>
+                                                        <small class="text-muted">
+                                                            {% if address.neighborhood %}{{ address.neighborhood }}, {% endif %}
+                                                            {{ address.district }}, {{ address.city }}
+                                                        </small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="text-center">
+                                    <a href="/addresses" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-plus"></i> Yeni Adres Ekle
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Sipariş verebilmek için önce bir adres eklemelisiniz.
+                                    <a href="/addresses" class="btn btn-primary btn-sm ms-2">Adres Ekle</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Sipariş Notu -->
+                        <div class="mb-4">
+                            <h6><i class="fas fa-sticky-note"></i> Sipariş Notu (İsteğe Bağlı)</h6>
+                            <textarea class="form-control" id="order_notes" name="order_notes" rows="3" 
+                                      placeholder="Siparişiniz hakkında özel bir notunuz varsa buraya yazabilirsiniz..."></textarea>
+                        </div>
+                        
+                        <!-- Ödeme Yöntemi -->
+                        <div class="mb-4">
+                            <h6><i class="fas fa-credit-card"></i> Ödeme Yöntemi</h6>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                Şu anda sadece kapıda ödeme seçeneği mevcuttur. Kredi kartı ile ödeme seçeneği yakında eklenecektir.
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="cash_on_delivery" value="cash" checked>
+                                <label class="form-check-label" for="cash_on_delivery">
+                                    <i class="fas fa-money-bill-wave"></i> Kapıda Ödeme (Nakit/Kart)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Onay Kutuları -->
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms_agreement" required>
+                                <label class="form-check-label" for="terms_agreement">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Satış sözleşmesini</a> okudum ve kabul ediyorum.
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="contact_permission">
+                                <label class="form-check-label" for="contact_permission">
+                                    Sipariş durumu hakkında SMS ve e-posta ile bilgilendirilmek istiyorum.
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sipariş Özeti -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Sipariş Özeti</h5>
+                </div>
+                <div class="card-body">
+                    <div id="orderSummary">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                            <p>Sepetiniz boş</p>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between">
+                        <span>Ara Toplam:</span>
+                        <span id="subtotal">0 TL</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Kargo:</span>
+                        <span id="shipping">Ücretsiz</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>KDV:</span>
+                        <span id="tax">Dahil</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between fw-bold h5">
+                        <span>Toplam:</span>
+                        <span id="total">0 TL</span>
+                    </div>
+                    
+                    <div class="d-grid mt-3">
+                        <button id="placeOrderBtn" class="btn btn-success btn-lg" disabled>
+                            <i class="fas fa-check"></i> Siparişi Tamamla
+                        </button>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt"></i> Güvenli ödeme
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Güvenlik Bilgileri -->
+            <div class="card mt-3">
+                <div class="card-body text-center">
+                    <h6><i class="fas fa-truck"></i> Ücretsiz Kargo</h6>
+                    <small class="text-muted">İstanbul içi tüm siparişlerde</small>
+                    
+                    <hr>
+                    
+                    <h6><i class="fas fa-tools"></i> Ücretsiz Montaj</h6>
+                    <small class="text-muted">Profesyonel ekibimizle</small>
+                    
+                    <hr>
+                    
+                    <h6><i class="fas fa-shield-alt"></i> 2 Yıl Garanti</h6>
+                    <small class="text-muted">Tüm ürünlerde</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Satış Sözleşmesi Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Satış Sözleşmesi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Taraflar</h6>
+                <p>Bu sözleşme Irmak Su Arıtma ile müşteri arasında yapılmıştır.</p>
+                
+                <h6>2. Ürün ve Hizmet</h6>
+                <p>Sipariş edilen ürünler ve hizmetler sözleşme kapsamındadır.</p>
+                
+                <h6>3. Teslimat</h6>
+                <p>Ürünler belirtilen adrese teslim edilecektir. Teslimat süresi 3-7 iş günüdür.</p>
+                
+                <h6>4. Ödeme</h6>
+                <p>Ödeme kapıda nakit veya kart ile yapılabilir.</p>
+                
+                <h6>5. Garanti</h6>
+                <p>Tüm ürünlerde 2 yıl garanti verilmektedir.</p>
+                
+                <h6>6. İptal ve İade</h6>
+                <p>14 gün içinde cayma hakkı mevcuttur.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+function selectAddress(addressId) {
+    document.getElementById(`address${addressId}`).checked = true;
+}
+
+function updateOrderSummary() {
+    const orderSummary = document.getElementById('orderSummary');
+    const subtotalEl = document.getElementById('subtotal');
+    const totalEl = document.getElementById('total');
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
+    
+    if (cart.length === 0) {
+        orderSummary.innerHTML = `
+            <div class="text-center text-muted">
+                <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                <p>Sepetiniz boş</p>
+                <a href="/cart" class="btn btn-primary btn-sm">Alışverişe Dön</a>
+            </div>
+        `;
+        subtotalEl.textContent = '0 TL';
+        totalEl.textContent = '0 TL';
+        placeOrderBtn.disabled = true;
+        return;
+    }
+    
+    let html = '';
+    let subtotal = 0;
+    
+    cart.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        subtotal += itemTotal;
+        
+        html += `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <small><strong>${item.name}</strong></small><br>
+                    <small class="text-muted">Adet: ${item.quantity}</small>
+                </div>
+                <div>
+                    <small>${itemTotal.toLocaleString()} TL</small>
+                </div>
+            </div>
+        `;
+    });
+    
+    orderSummary.innerHTML = html;
+    subtotalEl.textContent = subtotal.toLocaleString() + ' TL';
+    totalEl.textContent = subtotal.toLocaleString() + ' TL';
+    placeOrderBtn.disabled = false;
+}
+
+function placeOrder() {
+    const selectedAddress = document.querySelector('input[name="address_id"]:checked');
+    
+    if (!selectedAddress) {
+        alert('Lütfen bir teslimat adresi seçin.');
+        return;
+    }
+    
+    if (!document.getElementById('terms_agreement').checked) {
+        alert('Lütfen satış sözleşmesini kabul edin.');
+        return;
+    }
+    
+    if (cart.length === 0) {
+        alert('Sepetiniz boş.');
+        return;
+    }
+    
+    const orderData = {
+        address_id: parseInt(selectedAddress.value),
+        items: cart.map(item => ({
+            product_id: item.id,
+            product_name: item.name,
+            product_price: item.price,
+            quantity: item.quantity,
+            total_price: item.price * item.quantity
+        })),
+        total_amount: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+        notes: document.getElementById('order_notes').value,
+        payment_method: 'cash_on_delivery'
+    };
+    
+    // Butonu devre dışı bırak
+    const btn = document.getElementById('placeOrderBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sipariş Veriliyor...';
+    
+    fetch('/order/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Sepeti temizle
+            localStorage.removeItem('cart');
+            
+            alert(`Siparişiniz başarıyla alındı!\nSipariş No: ${data.order_number}\n\nEn kısa sürede sizinle iletişime geçeceğiz.`);
+            window.location.href = '/orders';
+        } else {
+            alert('Hata: ' + data.error);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Siparişi Tamamla';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check"></i> Siparişi Tamamla';
+    });
+}
+
+// Sayfa yüklendiğinde
+document.addEventListener('DOMContentLoaded', function() {
+    updateOrderSummary();
+    
+    // Sipariş ver butonuna tıklama
+    document.getElementById('placeOrderBtn').addEventListener('click', placeOrder);
+    
+    // Eğer sepet boşsa ana sayfaya yönlendir
+    if (cart.length === 0) {
+        setTimeout(() => {
+            if (confirm('Sepetiniz boş. Alışverişe devam etmek ister misiniz?')) {
+                window.location.href = '/cart';
+            }
+        }, 1000);
+    }
+});
+</script>
+{% endblock %} 

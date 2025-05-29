@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ürün Yönetimi - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/admin/stats">
+                <i class="fas fa-cog"></i> Admin Panel
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin/stats">
+                    <i class="fas fa-chart-bar"></i> İstatistikler
+                </a>
+                <a class="nav-link active" href="/admin/products">
+                    <i class="fas fa-box"></i> Ürün Yönetimi
+                </a>
+                <a class="nav-link" href="/admin/banners">
+                    <i class="fas fa-bullhorn"></i> Banner Yönetimi
+                </a>
+                <a class="nav-link" href="/admin/images">
+                    <i class="fas fa-images"></i> Resim Yönetimi
+                </a>
+                <a class="nav-link" href="/admin/logout">
+                    <i class="fas fa-sign-out-alt"></i> Çıkış
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h2><i class="fas fa-box"></i> Ürün ve Fiyat Yönetimi</h2>
+                <p class="text-muted">Ürün ve yedek parça fiyatlarını buradan düzenleyebilirsiniz.</p>
+            </div>
+        </div>
+
+        <!-- Ürünler -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-water"></i> Su Arıtma Sistemleri</h5>
+                        <div class="btn-group">
+                            <button class="btn btn-light btn-sm" onclick="showAddProductModal()">
+                                <i class="fas fa-plus"></i> Yeni Ürün Ekle
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="showAddProductWithImageModal()">
+                                <i class="fas fa-camera"></i> Resimle Ürün Ekle
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Ürün Adı</th>
+                                        <th>Açıklama</th>
+                                        <th>Mevcut Fiyat</th>
+                                        <th>Yeni Fiyat</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for product in products %}
+                                    <tr>
+                                        <td>{{ product.id }}</td>
+                                        <td><strong>{{ product.name }}</strong></td>
+                                        <td>{{ product.description[:50] }}...</td>
+                                        <td>
+                                            <span class="badge bg-success fs-6">{{ product.price }} TL</span>
+                                        </td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="form-control form-control-sm" 
+                                                   id="product-price-{{ product.id }}" 
+                                                   value="{{ product.price }}" 
+                                                   min="0" 
+                                                   step="0.01"
+                                                   style="width: 120px;">
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-primary" 
+                                                        onclick="updateProductPrice({{ product.id }})">
+                                                    <i class="fas fa-save"></i> Güncelle
+                                                </button>
+                                                <button class="btn btn-sm btn-danger" 
+                                                        onclick="deleteProduct({{ product.id }})">
+                                                    <i class="fas fa-trash"></i> Sil
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yedek Parçalar -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-tools"></i> Yedek Parçalar</h5>
+                        <div class="btn-group">
+                            <button class="btn btn-light btn-sm" onclick="showAddSparePartModal()">
+                                <i class="fas fa-plus"></i> Yeni Yedek Parça Ekle
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="showAddSparePartWithImageModal()">
+                                <i class="fas fa-camera"></i> Resimle Yedek Parça Ekle
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Parça Adı</th>
+                                        <th>Açıklama</th>
+                                        <th>Mevcut Fiyat</th>
+                                        <th>Yeni Fiyat</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for part in spare_parts %}
+                                    <tr>
+                                        <td>{{ part.id }}</td>
+                                        <td><strong>{{ part.name }}</strong></td>
+                                        <td>{{ part.description }}</td>
+                                        <td>
+                                            {% if part.price > 0 %}
+                                                <span class="badge bg-success fs-6">{{ part.price }} TL</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary fs-6">Fiyat Yok</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <input type="number" 
+                                                   class="form-control form-control-sm" 
+                                                   id="part-price-{{ part.id }}" 
+                                                   value="{{ part.price }}" 
+                                                   min="0" 
+                                                   step="0.01"
+                                                   style="width: 120px;">
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <button class="btn btn-sm btn-info" 
+                                                        onclick="updateSparePartPrice({{ part.id }})">
+                                                    <i class="fas fa-save"></i> Güncelle
+                                                </button>
+                                                <button class="btn btn-sm btn-danger" 
+                                                        onclick="deleteSparePart({{ part.id }})">
+                                                    <i class="fas fa-trash"></i> Sil
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toplu İşlemler -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5><i class="fas fa-percentage"></i> Toplu Fiyat Güncellemeleri</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Ürünlere Toplu Zam/İndirim</h6>
+                                <div class="input-group mb-3">
+                                    <input type="number" class="form-control" id="product-percentage" placeholder="Yüzde (örn: 10)" step="0.1">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <div class="d-grid gap-2 d-md-flex">
+                                    <button class="btn btn-success" onclick="bulkUpdateProducts('increase')">
+                                        <i class="fas fa-arrow-up"></i> Zam Yap
+                                    </button>
+                                    <button class="btn btn-danger" onclick="bulkUpdateProducts('decrease')">
+                                        <i class="fas fa-arrow-down"></i> İndirim Yap
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Yedek Parçalara Toplu Zam/İndirim</h6>
+                                <div class="input-group mb-3">
+                                    <input type="number" class="form-control" id="parts-percentage" placeholder="Yüzde (örn: 5)" step="0.1">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                                <div class="d-grid gap-2 d-md-flex">
+                                    <button class="btn btn-success" onclick="bulkUpdateParts('increase')">
+                                        <i class="fas fa-arrow-up"></i> Zam Yap
+                                    </button>
+                                    <button class="btn btn-danger" onclick="bulkUpdateParts('decrease')">
+                                        <i class="fas fa-arrow-down"></i> İndirim Yap
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yeni Ürün Ekleme Modal -->
+    <div class="modal fade" id="addProductModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus"></i> Yeni Ürün Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addProductForm">
+                        <div class="mb-3">
+                            <label for="productName" class="form-label">Ürün Adı *</label>
+                            <input type="text" class="form-control" id="productName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productDescription" class="form-label">Açıklama *</label>
+                            <textarea class="form-control" id="productDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productPrice" class="form-label">Fiyat (TL) *</label>
+                            <input type="number" class="form-control" id="productPrice" min="0" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productImage" class="form-label">Resim URL</label>
+                            <input type="url" class="form-control" id="productImage" placeholder="/static/images/product.jpg">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" onclick="addNewProduct()">
+                        <i class="fas fa-save"></i> Ürün Ekle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yeni Yedek Parça Ekleme Modal -->
+    <div class="modal fade" id="addSparePartModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus"></i> Yeni Yedek Parça Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addSparePartForm">
+                        <div class="mb-3">
+                            <label for="partName" class="form-label">Parça Adı *</label>
+                            <input type="text" class="form-control" id="partName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="partDescription" class="form-label">Açıklama *</label>
+                            <textarea class="form-control" id="partDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="partPrice" class="form-label">Fiyat (TL) *</label>
+                            <input type="number" class="form-control" id="partPrice" min="0" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="partImage" class="form-label">Resim URL</label>
+                            <input type="url" class="form-control" id="partImage" placeholder="/static/images/part.jpg">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-info" onclick="addNewSparePart()">
+                        <i class="fas fa-save"></i> Yedek Parça Ekle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resimle Ürün Ekleme Modal -->
+    <div class="modal fade" id="addProductWithImageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-camera"></i> Resimle Ürün Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addProductWithImageForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="productImageFile" class="form-label">Ürün Resmi *</label>
+                            <input type="file" class="form-control" id="productImageFile" name="image" accept="image/*" required>
+                            <div class="form-text">PNG, JPG, JPEG, GIF veya WEBP formatında resim seçin (Max: 16MB)</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productNameWithImage" class="form-label">Ürün Adı *</label>
+                            <input type="text" class="form-control" id="productNameWithImage" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productDescriptionWithImage" class="form-label">Açıklama *</label>
+                            <textarea class="form-control" id="productDescriptionWithImage" name="description" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="productPriceWithImage" class="form-label">Fiyat (TL) *</label>
+                            <input type="number" class="form-control" id="productPriceWithImage" name="price" min="0" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <div id="imagePreview" style="display: none;">
+                                <label class="form-label">Resim Önizleme:</label>
+                                <img id="previewImg" src="" alt="Önizleme" style="max-width: 100%; max-height: 200px;" class="img-thumbnail">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-success" onclick="addProductWithImage()">
+                        <i class="fas fa-save"></i> Resimle Ürün Ekle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resimle Yedek Parça Ekleme Modal -->
+    <div class="modal fade" id="addSparePartWithImageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-camera"></i> Resimle Yedek Parça Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addSparePartWithImageForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="partImageFile" class="form-label">Yedek Parça Resmi *</label>
+                            <input type="file" class="form-control" id="partImageFile" name="image" accept="image/*" required>
+                            <div class="form-text">PNG, JPG, JPEG, GIF veya WEBP formatında resim seçin (Max: 16MB)</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="partNameWithImage" class="form-label">Parça Adı *</label>
+                            <input type="text" class="form-control" id="partNameWithImage" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="partDescriptionWithImage" class="form-label">Açıklama *</label>
+                            <textarea class="form-control" id="partDescriptionWithImage" name="description" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="partPriceWithImage" class="form-label">Fiyat (TL) *</label>
+                            <input type="number" class="form-control" id="partPriceWithImage" name="price" min="0" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <div id="partImagePreview" style="display: none;">
+                                <label class="form-label">Resim Önizleme:</label>
+                                <img id="partPreviewImg" src="" alt="Önizleme" style="max-width: 100%; max-height: 200px;" class="img-thumbnail">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-success" onclick="addSparePartWithImage()">
+                        <i class="fas fa-save"></i> Resimle Yedek Parça Ekle
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function updateProductPrice(productId) {
+            const priceInput = document.getElementById(`product-price-${productId}`);
+            const newPrice = parseFloat(priceInput.value);
+            
+            if (newPrice < 0) {
+                alert('Fiyat negatif olamaz!');
+                return;
+            }
+            
+            fetch(`/admin/product/${productId}/edit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    price: newPrice
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    location.reload();
+                } else {
+                    alert('❌ Hata: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Bir hata oluştu!');
+            });
+        }
+        
+        function updateSparePartPrice(partId) {
+            const priceInput = document.getElementById(`part-price-${partId}`);
+            const newPrice = parseFloat(priceInput.value);
+            
+            if (newPrice < 0) {
+                alert('Fiyat negatif olamaz!');
+                return;
+            }
+            
+            fetch(`/admin/spare-part/${partId}/edit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    price: newPrice
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    location.reload();
+                } else {
+                    alert('❌ Hata: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Bir hata oluştu!');
+            });
+        }
+        
+        function bulkUpdateProducts(action) {
+            const percentage = parseFloat(document.getElementById('product-percentage').value);
+            
+            if (!percentage || percentage <= 0) {
+                alert('Geçerli bir yüzde değeri girin!');
+                return;
+            }
+            
+            const confirmMessage = action === 'increase' 
+                ? `Tüm ürünlere %${percentage} zam yapmak istediğinizden emin misiniz?`
+                : `Tüm ürünlerde %${percentage} indirim yapmak istediğinizden emin misiniz?`;
+            
+            if (!confirm(confirmMessage)) return;
+            
+            const productsData = {{ products | tojson }};
+            let updatePromises = [];
+            
+            productsData.forEach(product => {
+                const currentPrice = product.price;
+                const multiplier = action === 'increase' ? (1 + percentage/100) : (1 - percentage/100);
+                const newPrice = Math.round(currentPrice * multiplier);
+                
+                updatePromises.push(
+                    fetch(`/admin/product/${product.id}/edit`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            price: newPrice
+                        })
+                    })
+                );
+            });
+            
+            Promise.all(updatePromises)
+                .then(() => {
+                    alert('✅ Tüm ürün fiyatları güncellendi!');
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('❌ Bazı fiyatlar güncellenirken hata oluştu!');
+                });
+        }
+        
+        function bulkUpdateParts(action) {
+            const percentage = parseFloat(document.getElementById('parts-percentage').value);
+            
+            if (!percentage || percentage <= 0) {
+                alert('Geçerli bir yüzde değeri girin!');
+                return;
+            }
+            
+            const confirmMessage = action === 'increase' 
+                ? `Tüm yedek parçalara %${percentage} zam yapmak istediğinizden emin misiniz?`
+                : `Tüm yedek parçalarda %${percentage} indirim yapmak istediğinizden emin misiniz?`;
+            
+            if (!confirm(confirmMessage)) return;
+            
+            const sparePartsData = {{ spare_parts | tojson }};
+            let updatePromises = [];
+            
+            sparePartsData.forEach(part => {
+                if (part.price > 0) {
+                    const currentPrice = part.price;
+                    const multiplier = action === 'increase' ? (1 + percentage/100) : (1 - percentage/100);
+                    const newPrice = Math.round(currentPrice * multiplier);
+                    
+                    updatePromises.push(
+                        fetch(`/admin/spare-part/${part.id}/edit`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                price: newPrice
+                            })
+                        })
+                    );
+                }
+            });
+            
+            Promise.all(updatePromises)
+                .then(() => {
+                    alert('✅ Tüm yedek parça fiyatları güncellendi!');
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('❌ Bazı fiyatlar güncellenirken hata oluştu!');
+                });
+        }
+        
+        // Modal gösterme fonksiyonları
+        function showAddProductModal() {
+            const modal = new bootstrap.Modal(document.getElementById('addProductModal'));
+            modal.show();
+        }
+        
+        function showAddSparePartModal() {
+            const modal = new bootstrap.Modal(document.getElementById('addSparePartModal'));
+            modal.show();
+        }
+        
+        // Resimli modal gösterme fonksiyonları
+        function showAddProductWithImageModal() {
+            const modal = new bootstrap.Modal(document.getElementById('addProductWithImageModal'));
+            modal.show();
+        }
+        
+        function showAddSparePartWithImageModal() {
+            const modal = new bootstrap.Modal(document.getElementById('addSparePartWithImageModal'));
+            modal.show();
+        }
+        
+        // Resim önizleme fonksiyonları
+        document.getElementById('productImageFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        document.getElementById('partImageFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('partPreviewImg').src = e.target.result;
+                    document.getElementById('partImagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Resimle ürün ekleme
+        function addProductWithImage() {
+            const form = document.getElementById('addProductWithImageForm');
+            const formData = new FormData(form);
+            
+            // Form validasyonu
+            const name = formData.get('name');
+            const description = formData.get('description');
+            const price = formData.get('price');
+            const imageFile = document.getElementById('productImageFile').files[0];
+            
+            if (!name || !description || !price || !imageFile) {
+                alert('Lütfen tüm alanları doldurun ve bir resim seçin!');
+                return;
+            }
+            
+            if (parseFloat(price) < 0) {
+                alert('Fiyat negatif olamaz!');
+                return;
+            }
+            
+            // Dosya boyutu kontrolü (16MB)
+            if (imageFile.size > 16 * 1024 * 1024) {
+                alert('Resim dosyası çok büyük! Maksimum 16MB olmalıdır.');
+                return;
+            }
+            
+            fetch('/admin/product/add-with-image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    location.reload();
+                } else {
+                    alert('❌ Hata: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Bir hata oluştu!');
+            });
+        }
+        
+        // Resimle yedek parça ekleme
+        function addSparePartWithImage() {
+            const form = document.getElementById('addSparePartWithImageForm');
+            const formData = new FormData(form);
+            
+            // Form validasyonu
+            const name = formData.get('name');
+            const description = formData.get('description');
+            const price = formData.get('price');
+            const imageFile = document.getElementById('partImageFile').files[0];
+            
+            if (!name || !description || !price || !imageFile) {
+                alert('Lütfen tüm alanları doldurun ve bir resim seçin!');
+                return;
+            }
+            
+            if (parseFloat(price) < 0) {
+                alert('Fiyat negatif olamaz!');
+                return;
+            }
+            
+            // Dosya boyutu kontrolü (16MB)
+            if (imageFile.size > 16 * 1024 * 1024) {
+                alert('Resim dosyası çok büyük! Maksimum 16MB olmalıdır.');
+                return;
+            }
+            
+            fetch('/admin/spare-part/add-with-image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    location.reload();
+                } else {
+                    alert('❌ Hata: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Bir hata oluştu!');
+            });
+        }
+        
+        // Yeni ürün ekleme
+        function addNewProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const description = document.getElementById('productDescription').value.trim();
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const image = document.getElementById('productImage').value.trim();
+            
+            if (!name || !description || !price) {
+                alert('Lütfen tüm zorunlu alanları doldurun!');
+                return;
+            }
+            
+            if (price < 0) {
+                alert('Fiyat negatif olamaz!');
+                return;
+            }
+            
+            fetch('/admin/product/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: name,
+                    description: description,
+                    price: price,
+                    image: image || '/static/images/default-product.jpg'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    location.reload();
+                } else {
+                    alert('❌ Hata: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Bir hata oluştu!');
+            });
+        }
+        
+        // Yeni yedek parça ekleme
+        function addNewSparePart() {
+            const name = document.getElementById('partName').value.trim();
+            const description = document.getElementById('partDescription').value.trim();
+            const price = parseFloat(document.getElementById('partPrice').value);
+            const image = document.getElementById('partImage').value.trim();
+            
+            if (!name || !description || !price) {
+                alert('Lütfen tüm zorunlu alanları doldurun!');
+                return;
+            }
+            
+            if (price < 0) {
+                alert('Fiyat negatif olamaz!');
+                return;
+            }
+            
+            fetch('/admin/spare-part/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: name,
+                    description: description,
+                    price: price,
+                    image: image || '/static/images/default-part.jpg'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    location.reload();
+                } else {
+                    alert('❌ Hata: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Bir hata oluştu!');
+            });
+        }
+        
+        // Ürün silme
+        function deleteProduct(productId) {
+            if (confirm('Bu ürünü silmek istediğinizden emin misiniz?\n\nBu işlem geri alınamaz.')) {
+                fetch(`/admin/product/${productId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        location.reload();
+                    } else {
+                        alert('❌ Hata: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('❌ Bir hata oluştu!');
+                });
+            }
+        }
+        
+        // Yedek parça silme
+        function deleteSparePart(partId) {
+            if (confirm('Bu yedek parçayı silmek istediğinizden emin misiniz?\n\nBu işlem geri alınamaz.')) {
+                fetch(`/admin/spare-part/${partId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        location.reload();
+                    } else {
+                        alert('❌ Hata: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('❌ Bir hata oluştu!');
+                });
+            }
+        }
+    </script>
+</body>
+</html> 

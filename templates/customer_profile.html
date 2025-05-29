@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %}Profilim - Irmak Su Arıtma{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="fas fa-user"></i> Hesabım</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="/profile" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-user"></i> Profilim
+                    </a>
+                    <a href="/orders" class="list-group-item list-group-item-action">
+                        <i class="fas fa-box"></i> Siparişlerim
+                    </a>
+                    <a href="/addresses" class="list-group-item list-group-item-action">
+                        <i class="fas fa-map-marker-alt"></i> Adreslerim
+                    </a>
+                    <a href="/logout" class="list-group-item list-group-item-action text-danger">
+                        <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ana İçerik -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-user"></i> Profil Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <form id="profileForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label">Ad</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ customer.first_name }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label">Soyad</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ customer.last_name }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-posta</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ customer.email }}" readonly>
+                            <div class="form-text">E-posta adresi değiştirilemez.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Telefon</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" value="{{ customer.phone }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Üyelik Tarihi</label>
+                            <input type="text" class="form-control" value="{{ customer.created_at.strftime('%d.%m.%Y') }}" readonly>
+                        </div>
+                        
+                        {% if customer.last_login %}
+                        <div class="mb-3">
+                            <label class="form-label">Son Giriş</label>
+                            <input type="text" class="form-control" value="{{ customer.last_login.strftime('%d.%m.%Y %H:%M') }}" readonly>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Güncelle
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Şifre Değiştirme -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-lock"></i> Şifre Değiştir</h5>
+                </div>
+                <div class="card-body">
+                    <form id="passwordForm">
+                        <div class="mb-3">
+                            <label for="current_password" class="form-label">Mevcut Şifre</label>
+                            <input type="password" class="form-control" id="current_password" name="current_password" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label">Yeni Şifre</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password" minlength="6" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirm_new_password" class="form-label">Yeni Şifre Tekrar</label>
+                            <input type="password" class="form-control" id="confirm_new_password" name="confirm_new_password" required>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-key"></i> Şifre Değiştir
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- İstatistikler -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">{{ customer.orders|length }}</h5>
+                            <p class="card-text">Toplam Sipariş</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">{{ customer.addresses|length }}</h5>
+                            <p class="card-text">Kayıtlı Adres</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-info">Aktif</h5>
+                            <p class="card-text">Üyelik Durumu</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Profil güncelleme
+document.getElementById('profileForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        first_name: document.getElementById('first_name').value,
+        last_name: document.getElementById('last_name').value,
+        phone: document.getElementById('phone').value
+    };
+    
+    fetch('/profile/edit', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Hata: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    });
+});
+
+// Şifre değiştirme
+document.getElementById('passwordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const newPassword = document.getElementById('new_password').value;
+    const confirmPassword = document.getElementById('confirm_new_password').value;
+    
+    if (newPassword !== confirmPassword) {
+        alert('Yeni şifreler eşleşmiyor!');
+        return;
+    }
+    
+    const formData = {
+        current_password: document.getElementById('current_password').value,
+        new_password: newPassword
+    };
+    
+    fetch('/profile/change-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            document.getElementById('passwordForm').reset();
+        } else {
+            alert('Hata: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    });
+});
+</script>
+{% endblock %} 

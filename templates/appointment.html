@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Randevu Al - Cenap Su Arıtma{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">Online Randevu</h1>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Başarı/Hata mesajları için alan -->
+                    <div id="messageArea" class="mb-3" style="display: none;"></div>
+                    
+                    <form id="appointmentForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Adınız Soyadınız *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Telefon Numaranız *</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-posta Adresiniz</label>
+                            <input type="email" class="form-control" id="email" name="email">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="service_type" class="form-label">Hizmet Türü *</label>
+                            <select class="form-select" id="service_type" name="service_type" required>
+                                <option value="">Seçiniz</option>
+                                <option value="montaj">Montaj</option>
+                                <option value="bakim">Bakım</option>
+                                <option value="filtre_degisimi">Filtre Değişimi</option>
+                                <option value="ariza">Arıza</option>
+                                <option value="diger">Diğer</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Randevu Tarihi ve Saati *</label>
+                            <input type="datetime-local" class="form-control" id="date" name="date" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Mesajınız</label>
+                            <textarea class="form-control" id="message" name="message" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <span id="submitText">Randevu Oluştur</span>
+                                <span id="loadingSpinner" class="spinner-border spinner-border-sm ms-2" style="display: none;"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Minimum tarih ayarla (bugünden sonra)
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('date');
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    dateInput.min = now.toISOString().slice(0, 16);
+});
+
+function showMessage(message, type = 'success') {
+    const messageArea = document.getElementById('messageArea');
+    messageArea.innerHTML = `
+        <div class="alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    messageArea.style.display = 'block';
+    messageArea.scrollIntoView({ behavior: 'smooth' });
+}
+
+function setLoading(loading) {
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    
+    if (loading) {
+        submitBtn.disabled = true;
+        submitText.textContent = 'Gönderiliyor...';
+        loadingSpinner.style.display = 'inline-block';
+    } else {
+        submitBtn.disabled = false;
+        submitText.textContent = 'Randevu Oluştur';
+        loadingSpinner.style.display = 'none';
+    }
+}
+
+document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Loading durumunu başlat
+    setLoading(true);
+    
+    // Form verilerini topla
+    const formData = {
+        name: document.getElementById('name').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        service_type: document.getElementById('service_type').value,
+        date: document.getElementById('date').value,
+        message: document.getElementById('message').value.trim()
+    };
+    
+    // Basit validasyon
+    if (!formData.name || !formData.phone || !formData.service_type || !formData.date) {
+        showMessage('Lütfen tüm zorunlu alanları doldurun.', 'error');
+        setLoading(false);
+        return;
+    }
+    
+    // Telefon numarası formatını kontrol et
+    const phoneRegex = /^[0-9+\-\s\(\)]{10,}$/;
+    if (!phoneRegex.test(formData.phone)) {
+        showMessage('Lütfen geçerli bir telefon numarası girin.', 'error');
+        setLoading(false);
+        return;
+    }
+    
+    // E-posta formatını kontrol et (eğer girilmişse)
+    if (formData.email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            showMessage('Lütfen geçerli bir e-posta adresi girin.', 'error');
+            setLoading(false);
+            return;
+        }
+    }
+    
+    console.log('Gönderilen veri:', formData);
+    
+    fetch('/appointment/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        setLoading(false);
+        
+        if (data.success) {
+            showMessage('🎉 Randevunuz başarıyla oluşturuldu! En kısa sürede sizinle iletişime geçeceğiz.', 'success');
+            document.getElementById('appointmentForm').reset();
+            
+            // 3 saniye sonra ana sayfaya yönlendir
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 3000);
+        } else {
+            showMessage('❌ Hata: ' + (data.error || 'Bir hata oluştu'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        setLoading(false);
+        showMessage('❌ Bağlantı hatası: ' + error.message, 'error');
+    });
+});
+</script>
+{% endblock %} 

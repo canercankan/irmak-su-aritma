@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resim Yönetimi - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .image-card {
+            transition: transform 0.2s;
+        }
+        .image-card:hover {
+            transform: scale(1.02);
+        }
+        .image-preview {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        .used-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .size-badge {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/admin/stats">
+                <i class="fas fa-cog"></i> Admin Panel
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin/stats">
+                    <i class="fas fa-chart-bar"></i> İstatistikler
+                </a>
+                <a class="nav-link" href="/admin/products">
+                    <i class="fas fa-box"></i> Ürün Yönetimi
+                </a>
+                <a class="nav-link" href="/admin/banners">
+                    <i class="fas fa-bullhorn"></i> Banner Yönetimi
+                </a>
+                <a class="nav-link active" href="/admin/images">
+                    <i class="fas fa-images"></i> Resim Yönetimi
+                </a>
+                <a class="nav-link" href="/admin/logout">
+                    <i class="fas fa-sign-out-alt"></i> Çıkış
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2><i class="fas fa-images"></i> Resim Yönetimi</h2>
+                        <p class="text-muted">Tüm resimleri görüntüleyin ve kullanılmayan resimleri silin.</p>
+                    </div>
+                    <button class="btn btn-warning" onclick="cleanupUnusedImages()">
+                        <i class="fas fa-broom"></i> Kullanılmayan Resimleri Temizle
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- İstatistikler -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body">
+                        <h5>Toplam Resim</h5>
+                        <h3>{{ images|length }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h5>Kullanılan</h5>
+                        <h3>{{ images|selectattr('is_used')|list|length }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body">
+                        <h5>Kullanılmayan</h5>
+                        <h3>{{ images|rejectattr('is_used')|list|length }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body">
+                        <h5>Toplam Boyut</h5>
+                        <h3>{{ "%.1f"|format(images|sum(attribute='size_mb')) }} MB</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resim Listesi -->
+        <div class="row">
+            {% for image in images %}
+            <div class="col-md-4 col-lg-3 mb-4">
+                <div class="card image-card h-100">
+                    <div class="position-relative">
+                        <img src="{{ image.url }}" alt="{{ image.filename }}" class="image-preview">
+                        
+                        <!-- Kullanım durumu badge -->
+                        {% if image.is_used %}
+                            <span class="badge bg-success used-badge">
+                                <i class="fas fa-check"></i> Kullanılıyor
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning used-badge">
+                                <i class="fas fa-exclamation"></i> Kullanılmıyor
+                            </span>
+                        {% endif %}
+                        
+                        <!-- Dosya boyutu badge -->
+                        <span class="badge bg-dark size-badge">
+                            {{ image.size_mb }} MB
+                        </span>
+                    </div>
+                    
+                    <div class="card-body">
+                        <h6 class="card-title text-truncate" title="{{ image.filename }}">
+                            {{ image.filename }}
+                        </h6>
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="viewImage('{{ image.url }}', '{{ image.filename }}')">
+                                <i class="fas fa-eye"></i> Görüntüle
+                            </button>
+                            
+                            {% if not image.is_used %}
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteImage('{{ image.filename }}')">
+                                <i class="fas fa-trash"></i> Sil
+                            </button>
+                            {% else %}
+                            <button class="btn btn-sm btn-secondary" disabled>
+                                <i class="fas fa-lock"></i> Kullanımda
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if not images %}
+        <div class="row">
+            <div class="col-12 text-center">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Henüz resim bulunamadı.
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Resim Görüntüleme Modal -->
+    <div class="modal fade" id="imageViewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalTitle">Resim Görüntüle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImage" src="" alt="" style="max-width: 100%; height: auto;">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function viewImage(imageUrl, filename) {
+            document.getElementById('modalImage').src = imageUrl;
+            document.getElementById('imageModalTitle').textContent = filename;
+            const modal = new bootstrap.Modal(document.getElementById('imageViewModal'));
+            modal.show();
+        }
+
+        function deleteImage(filename) {
+            if (confirm(`"${filename}" dosyasını silmek istediğinizden emin misiniz?\n\nBu işlem geri alınamaz.`)) {
+                fetch('/admin/image/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        filename: filename
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        location.reload();
+                    } else {
+                        alert('❌ Hata: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('❌ Bir hata oluştu!');
+                });
+            }
+        }
+
+        function cleanupUnusedImages() {
+            if (confirm('Kullanılmayan tüm resimleri silmek istediğinizden emin misiniz?\n\nBu işlem geri alınamaz ve varsayılan resimler korunacaktır.')) {
+                fetch('/admin/cleanup-images', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        if (data.deleted_files && data.deleted_files.length > 0) {
+                            console.log('Silinen dosyalar:', data.deleted_files);
+                        }
+                        location.reload();
+                    } else {
+                        alert('❌ Hata: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('❌ Bir hata oluştu!');
+                });
+            }
+        }
+    </script>
+</body>
+</html> 

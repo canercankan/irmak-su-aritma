@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Siparişlerim - Irmak Su Arıtma{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="fas fa-user"></i> Hesabım</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="/profile" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user"></i> Profilim
+                    </a>
+                    <a href="/orders" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-box"></i> Siparişlerim
+                    </a>
+                    <a href="/addresses" class="list-group-item list-group-item-action">
+                        <i class="fas fa-map-marker-alt"></i> Adreslerim
+                    </a>
+                    <a href="/logout" class="list-group-item list-group-item-action text-danger">
+                        <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ana İçerik -->
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-box"></i> Siparişlerim</h4>
+                <div>
+                    <button id="bulkDeleteBtn" class="btn btn-outline-danger btn-sm" onclick="deleteAllCancelledOrders()" style="display: none;">
+                        <i class="fas fa-trash-alt"></i> İptal Edilenleri Temizle
+                    </button>
+                </div>
+            </div>
+            
+            {% if orders %}
+                {% for order in orders %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <strong>Sipariş No: {{ order.order_number }}</strong>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="badge 
+                                    {% if order.status == 'Bekliyor' %}bg-warning
+                                    {% elif order.status == 'Onaylandı' %}bg-info
+                                    {% elif order.status == 'Hazırlanıyor' %}bg-primary
+                                    {% elif order.status == 'Kargoda' %}bg-secondary
+                                    {% elif order.status == 'Teslim Edildi' %}bg-success
+                                    {% elif order.status == 'İptal' %}bg-danger
+                                    {% endif %}">
+                                    {{ order.status }}
+                                </span>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <strong>{{ order.total_amount|int }} TL</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Sipariş Kalemleri -->
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6>Sipariş Detayları:</h6>
+                                {% for item in order.items %}
+                                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                                    <div>
+                                        <strong>{{ item.product_name }}</strong>
+                                        <small class="text-muted d-block">Adet: {{ item.quantity }}</small>
+                                    </div>
+                                    <div>
+                                        <span>{{ item.total_price|int }} TL</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                
+                                {% if order.notes %}
+                                <div class="mt-3">
+                                    <small class="text-muted">
+                                        <strong>Not:</strong> {{ order.notes }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Teslimat Adresi -->
+                            <div class="col-md-4">
+                                <h6>Teslimat Adresi:</h6>
+                                <div class="border rounded p-3 bg-light">
+                                    <p class="mb-1"><strong>{{ order.address.first_name }} {{ order.address.last_name }}</strong></p>
+                                    <p class="mb-1">{{ order.address.phone }}</p>
+                                    <p class="mb-1">{{ order.address.address_line }}</p>
+                                    <p class="mb-0 text-muted small">
+                                        {% if order.address.neighborhood %}{{ order.address.neighborhood }}, {% endif %}
+                                        {{ order.address.district }}, {{ order.address.city }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sipariş Durumu Timeline -->
+                        <div class="mt-4">
+                            <h6>Sipariş Takibi:</h6>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="progress mb-2" style="height: 8px;">
+                                        {% set progress = 0 %}
+                                        {% if order.status == 'Bekliyor' %}{% set progress = 20 %}
+                                        {% elif order.status == 'Onaylandı' %}{% set progress = 40 %}
+                                        {% elif order.status == 'Hazırlanıyor' %}{% set progress = 60 %}
+                                        {% elif order.status == 'Kargoda' %}{% set progress = 80 %}
+                                        {% elif order.status == 'Teslim Edildi' %}{% set progress = 100 %}
+                                        {% endif %}
+                                        <div class="progress-bar" style="width: {{ progress }}%"></div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between small text-muted">
+                                        <span class="{% if order.status in ['Bekliyor', 'Onaylandı', 'Hazırlanıyor', 'Kargoda', 'Teslim Edildi'] %}text-primary fw-bold{% endif %}">
+                                            Sipariş Alındı
+                                        </span>
+                                        <span class="{% if order.status in ['Onaylandı', 'Hazırlanıyor', 'Kargoda', 'Teslim Edildi'] %}text-primary fw-bold{% endif %}">
+                                            Onaylandı
+                                        </span>
+                                        <span class="{% if order.status in ['Hazırlanıyor', 'Kargoda', 'Teslim Edildi'] %}text-primary fw-bold{% endif %}">
+                                            Hazırlanıyor
+                                        </span>
+                                        <span class="{% if order.status in ['Kargoda', 'Teslim Edildi'] %}text-primary fw-bold{% endif %}">
+                                            Kargoda
+                                        </span>
+                                        <span class="{% if order.status == 'Teslim Edildi' %}text-success fw-bold{% endif %}">
+                                            Teslim Edildi
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Aksiyon Butonları -->
+                        <div class="mt-3 d-flex gap-2">
+                            {% if order.status == 'Bekliyor' %}
+                            <button class="btn btn-sm btn-outline-danger" onclick="cancelOrder('{{ order.order_number }}')">
+                                <i class="fas fa-times"></i> İptal Et
+                            </button>
+                            {% endif %}
+                            
+                            {% if order.status == 'İptal' %}
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteOrder('{{ order.order_number }}')">
+                                <i class="fas fa-trash"></i> Sil
+                            </button>
+                            {% endif %}
+                            
+                            <button class="btn btn-sm btn-outline-primary" onclick="contactSupport('{{ order.order_number }}')">
+                                <i class="fas fa-headset"></i> Destek
+                            </button>
+                            
+                            {% if order.status == 'Teslim Edildi' %}
+                            <button class="btn btn-sm btn-outline-success" onclick="reorder('{{ order.order_number }}')">
+                                <i class="fas fa-redo"></i> Tekrar Sipariş Ver
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-box fa-3x text-muted mb-3"></i>
+                    <h5>Henüz sipariş vermemişsiniz</h5>
+                    <p class="text-muted">İlk siparişinizi vermek için ürünlerimize göz atın.</p>
+                    <a href="/cart" class="btn btn-primary">
+                        <i class="fas fa-shopping-cart"></i> Alışverişe Başla
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function cancelOrder(orderNumber) {
+    if (confirm('Siparişi iptal etmek istediğinizden emin misiniz?')) {
+        fetch(`/order/${orderNumber}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Sipariş iptal edildi.');
+                location.reload();
+            } else {
+                alert('Hata: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+        });
+    }
+}
+
+function contactSupport(orderNumber) {
+    const message = `Merhaba, ${orderNumber} numaralı siparişim hakkında bilgi almak istiyorum.`;
+    const whatsappUrl = `https://wa.me/905448113105?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+function reorder(orderNumber) {
+    if (confirm('Bu siparişi tekrar vermek istediğinizden emin misiniz?')) {
+        fetch(`/order/${orderNumber}/reorder`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Mevcut sepeti al
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                
+                // Sipariş kalemlerini sepete ekle
+                data.items.forEach(item => {
+                    const existingItem = cart.find(cartItem => cartItem.id === item.id && cartItem.type === item.type);
+                    
+                    if (existingItem) {
+                        existingItem.quantity += item.quantity;
+                    } else {
+                        cart.push(item);
+                    }
+                });
+                
+                // Sepeti kaydet
+                localStorage.setItem('cart', JSON.stringify(cart));
+                
+                alert('Ürünler sepete eklendi!');
+                window.location.href = '/cart';
+            } else {
+                alert('Hata: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+        });
+    }
+}
+
+function deleteOrder(orderNumber) {
+    if (confirm('Bu iptal edilmiş siparişi kalıcı olarak silmek istediğinizden emin misiniz?\n\nBu işlem geri alınamaz.')) {
+        fetch(`/order/${orderNumber}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ ' + data.message);
+                location.reload();
+            } else {
+                alert('❌ Hata: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('❌ Bir hata oluştu. Lütfen tekrar deneyin.');
+        });
+    }
+}
+
+function deleteAllCancelledOrders() {
+    if (confirm('Tüm iptal edilmiş siparişleri kalıcı olarak silmek istediğinizden emin misiniz?\n\nBu işlem geri alınamaz ve tüm iptal edilmiş siparişler silinecektir.')) {
+        const btn = document.getElementById('bulkDeleteBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Siliniyor...';
+        
+        fetch('/orders/delete-cancelled', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ ' + data.message);
+                location.reload();
+            } else {
+                alert('❌ Hata: ' + data.error);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash-alt"></i> İptal Edilenleri Temizle';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('❌ Bir hata oluştu. Lütfen tekrar deneyin.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-trash-alt"></i> İptal Edilenleri Temizle';
+        });
+    }
+}
+
+// Sayfa yüklendiğinde iptal edilmiş sipariş var mı kontrol et
+document.addEventListener('DOMContentLoaded', function() {
+    const cancelledOrders = document.querySelectorAll('.badge.bg-danger');
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    
+    if (cancelledOrders.length > 0 && bulkDeleteBtn) {
+        bulkDeleteBtn.style.display = 'inline-block';
+    }
+});
+</script>
+{% endblock %} 

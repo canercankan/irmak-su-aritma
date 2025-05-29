@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Ziyaretçi İstatistikleri - Admin Panel{% endblock %}
+
+{% block content %}
+<!-- Admin Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/admin/stats">
+            <i class="fas fa-cog"></i> Admin Panel
+        </a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link active" href="/admin/stats">
+                <i class="fas fa-chart-bar"></i> İstatistikler
+            </a>
+            <a class="nav-link" href="/admin/products">
+                <i class="fas fa-box"></i> Ürün Yönetimi
+            </a>
+            <a class="nav-link" href="/admin/banners">
+                <i class="fas fa-bullhorn"></i> Banner Yönetimi
+            </a>
+            <a class="nav-link" href="/admin/images">
+                <i class="fas fa-images"></i> Resim Yönetimi
+            </a>
+            <a class="nav-link" href="/admin/logout">
+                <i class="fas fa-sign-out-alt"></i> Çıkış
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">📊 Ziyaretçi İstatistikleri</h1>
+            
+            <!-- Özet Kartlar -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">📈 Toplam Ziyaretçi</h5>
+                            <h2 class="card-text">{{ stats.total_visitors }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">👥 Bugünkü Ziyaretçi</h5>
+                            <h2 class="card-text">{{ stats.today_visitors }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Haftalık İstatistikler -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📅 Son 7 Günün İstatistikleri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Ziyaretçi Sayısı</th>
+                                    <th>Sayfa</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in stats.weekly_stats %}
+                                <tr>
+                                    <td>{{ stat.date.strftime('%d.%m.%Y') }}</td>
+                                    <td><span class="badge bg-primary">{{ stat.count }}</span></td>
+                                    <td>{{ stat.page }}</td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">Henüz veri yok</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

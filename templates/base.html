@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="İstanbul'da profesyonel su arıtma sistemleri, filtre değişimi ve yedek parça hizmetleri. Ücretsiz montaj, 2 yıl garanti. Hemen randevu alın!">
+    <meta name="keywords" content="su arıtma, su filtresi, istanbul su arıtma, filtre değişimi, su arıtma sistemleri, yedek parça, ücretsiz montaj">
+    <meta name="author" content="Irmak Su Arıtma">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Irmak Su Arıtma - İstanbul'da Profesyonel Su Arıtma Hizmetleri">
+    <meta property="og:description" content="İstanbul'da profesyonel su arıtma sistemleri, filtre değişimi ve yedek parça hizmetleri. Ücretsiz montaj, 2 yıl garanti.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.irmaksuaritma.com">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>{% block title %}Irmak Su Arıtma{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background-color: #0d6efd;
+            padding: 1rem 0;
+        }
+        .navbar-brand {
+            color: white !important;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .nav-link {
+            color: white !important;
+            font-size: 1.1rem;
+            margin: 0 10px;
+        }
+        .nav-link:hover {
+            color: #f8f9fa !important;
+        }
+        .whatsapp-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #25D366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 99999;
+            text-decoration: none;
+            border: 2px solid white;
+        }
+        .whatsapp-button:hover {
+            transform: scale(1.1);
+            background-color: #128C7E;
+            color: white;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        footer {
+            background-color: #0d6efd;
+            color: white;
+            padding: 50px 0 20px;
+            margin-top: 50px;
+        }
+        footer h5 {
+            color: white;
+            margin-bottom: 20px;
+        }
+        footer ul {
+            list-style: none;
+            padding: 0;
+        }
+        footer ul li {
+            margin-bottom: 10px;
+        }
+        footer ul li a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        footer ul li a:hover {
+            color: #f8f9fa;
+        }
+        .footer-bottom {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .blink {
+            animation: fadeBlink 2s infinite;
+        }
+        @keyframes fadeBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-16778196152"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-16778196152');
+    </script>
+    
+    <!-- Schema Markup - İşletme Bilgileri -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Irmak Su Arıtma",
+      "description": "İstanbul'da profesyonel su arıtma sistemleri, filtre değişimi ve yedek parça hizmetleri",
+      "url": "https://www.irmaksuaritma.com",
+      "telephone": "+905448113105",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Cennet Mahallesi, Hürriyet Caddesi No:11/B",
+        "addressLocality": "İstanbul",
+        "addressCountry": "TR"
+      },
+      "openingHours": "Mo-Sa 09:00-18:00",
+      "priceRange": "$$",
+      "serviceArea": {
+        "@type": "City",
+        "name": "İstanbul"
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Su Arıtma Hizmetleri",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Su Arıtma Sistemi Kurulumu"
+            }
+          },
+          {
+            "@type": "Offer", 
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Filtre Değişimi"
+            }
+          }
+        ]
+      }
+    }
+    </script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg" id="mainNavbar">
+        <div class="container">
+            <a class="navbar-brand" href="/">Irmak Su Arıtma</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Ana Sayfa</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/products">Ürünlerimiz</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">Hakkımızda</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">İletişim</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/spare-parts">Su Arıtma Yedek Parça ve Ekipmanları</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-success text-white ms-2" href="https://wa.me/905448113105?text=Merhaba, su arıtma sistemi hakkında bilgi almak istiyorum." target="_blank">
+                            <i class="fab fa-whatsapp me-1"></i>Canlı Destek
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- Sağ taraf - Kullanıcı menüsü -->
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/cart">
+                            <i class="fas fa-shopping-cart"></i> Sepet
+                            <span id="cartCount" class="badge bg-danger ms-1" style="display: none;">0</span>
+                        </a>
+                    </li>
+                    
+                    {% if session.customer_id %}
+                        <!-- Giriş yapmış kullanıcı -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user"></i> {{ session.customer_name }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="/profile"><i class="fas fa-user"></i> Profilim</a></li>
+                                <li><a class="dropdown-item" href="/orders"><i class="fas fa-box"></i> Siparişlerim</a></li>
+                                <li><a class="dropdown-item" href="/addresses"><i class="fas fa-map-marker-alt"></i> Adreslerim</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt"></i> Çıkış Yap</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <!-- Giriş yapmamış kullanıcı -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">
+                                <i class="fas fa-sign-in-alt"></i> Giriş Yap
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-light ms-2" href="/register">
+                                <i class="fas fa-user-plus"></i> Üye Ol
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- WhatsApp Button -->
+    <a href="https://wa.me/905448113105" class="whatsapp-button" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- Ana İçerik -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>İletişim</h5>
+                    <p>Adres: Cennet Mahallesi, Hürriyet Caddesi No:11/B</p>
+                    <p>Telefon: 0544 811 31 05</p>
+                    <p>Sabit: 0212 592 85 91</p>
+                    <p>E-posta: cenapoktay@gmail.com</p>
+                    <p class="mt-3"><i class="fas fa-info-circle me-2"></i>Her marka filtre değişimi için iletişime geçin</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Hızlı Bağlantılar</h5>
+                    <ul>
+                        <li><a href="/">Ana Sayfa</a></li>
+                        <li><a href="/products">Ürünlerimiz</a></li>
+                        <li><a href="/about">Hakkımızda</a></li>
+                        <li><a href="/contact">İletişim</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Çalışma Saatleri</h5>
+                    <p>Pazartesi - Cumartesi: 09:00 - 18:00</p>
+                    <p>Pazar: Kapalı</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Irmak Su Arıtma. Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Admin sayfalarında ana navbar'ı gizle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Admin sayfalarında ana navbar'ı gizle
+            if (window.location.pathname.startsWith('/admin/') && window.location.pathname !== '/admin/login') {
+                const mainNavbar = document.getElementById('mainNavbar');
+                if (mainNavbar) {
+                    mainNavbar.style.display = 'none';
+                }
+            }
+        });
+    </script>
+    
+    <!-- Sepet Sayacı JavaScript -->
+    <script>
+        function updateCartCounter() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const cartCount = document.getElementById('cartCount');
+            
+            if (cart.length > 0) {
+                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+                cartCount.textContent = totalItems;
+                cartCount.style.display = 'inline';
+            } else {
+                cartCount.style.display = 'none';
+            }
+        }
+        
+        // Sayfa yüklendiğinde sepet sayacını güncelle
+        document.addEventListener('DOMContentLoaded', updateCartCounter);
+        
+        // LocalStorage değişikliklerini dinle
+        window.addEventListener('storage', updateCartCounter);
+        
+        // Sepet güncellendiğinde sayacı güncelle (custom event)
+        window.addEventListener('cartUpdated', updateCartCounter);
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

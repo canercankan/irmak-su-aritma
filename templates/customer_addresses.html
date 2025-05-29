@@ -1,0 +1,459 @@
+{% extends "base.html" %}
+
+{% block title %}Adreslerim - Irmak Su Arıtma{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="fas fa-user"></i> Hesabım</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="/profile" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user"></i> Profilim
+                    </a>
+                    <a href="/orders" class="list-group-item list-group-item-action">
+                        <i class="fas fa-box"></i> Siparişlerim
+                    </a>
+                    <a href="/addresses" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-map-marker-alt"></i> Adreslerim
+                    </a>
+                    <a href="/logout" class="list-group-item list-group-item-action text-danger">
+                        <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ana İçerik -->
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-map-marker-alt"></i> Adreslerim</h4>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                    <i class="fas fa-plus"></i> Yeni Adres Ekle
+                </button>
+            </div>
+            
+            {% if customer.addresses %}
+                <div class="row">
+                    {% for address in customer.addresses %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card {% if address.is_default %}border-primary{% endif %}">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    {{ address.title }}
+                                    {% if address.is_default %}
+                                        <span class="badge bg-primary ms-2">Varsayılan</span>
+                                    {% endif %}
+                                </h6>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="editAddress({{ address.id }})">
+                                            <i class="fas fa-edit"></i> Düzenle
+                                        </a></li>
+                                        {% if not address.is_default %}
+                                        <li><a class="dropdown-item" href="#" onclick="setDefaultAddress({{ address.id }})">
+                                            <i class="fas fa-star"></i> Varsayılan Yap
+                                        </a></li>
+                                        {% endif %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteAddress({{ address.id }})">
+                                            <i class="fas fa-trash"></i> Sil
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-1"><strong>{{ address.first_name }} {{ address.last_name }}</strong></p>
+                                <p class="mb-1">{{ address.phone }}</p>
+                                <p class="mb-1">{{ address.address_line }}</p>
+                                <p class="mb-0 text-muted">
+                                    {% if address.neighborhood %}{{ address.neighborhood }}, {% endif %}
+                                    {{ address.district }}, {{ address.city }}
+                                    {% if address.postal_code %} - {{ address.postal_code }}{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                    <h5>Henüz adres eklememişsiniz</h5>
+                    <p class="text-muted">Sipariş verebilmek için en az bir adres eklemelisiniz.</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                        <i class="fas fa-plus"></i> İlk Adresimi Ekle
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Adres Ekleme Modal -->
+<div class="modal fade" id="addAddressModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Adres Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addAddressForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="title" class="form-label">Adres Başlığı *</label>
+                            <input type="text" class="form-control" id="title" name="title" placeholder="Ev, İş, vb." required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" id="is_default" name="is_default">
+                                <label class="form-check-label" for="is_default">
+                                    Varsayılan adres olarak ayarla
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">Ad *</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" value="{{ customer.first_name }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">Soyad *</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" value="{{ customer.last_name }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Telefon *</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" value="{{ customer.phone }}" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="city" class="form-label">İl *</label>
+                            <select class="form-select" id="city" name="city" required>
+                                <option value="">İl Seçin</option>
+                                <option value="İstanbul">İstanbul</option>
+                                <option value="Ankara">Ankara</option>
+                                <option value="İzmir">İzmir</option>
+                                <option value="Bursa">Bursa</option>
+                                <option value="Antalya">Antalya</option>
+                                <!-- Diğer iller eklenebilir -->
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="district" class="form-label">İlçe *</label>
+                            <input type="text" class="form-control" id="district" name="district" placeholder="İlçe" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="neighborhood" class="form-label">Mahalle</label>
+                            <input type="text" class="form-control" id="neighborhood" name="neighborhood" placeholder="Mahalle">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="postal_code" class="form-label">Posta Kodu</label>
+                            <input type="text" class="form-control" id="postal_code" name="postal_code" placeholder="34000">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address_line" class="form-label">Adres *</label>
+                        <textarea class="form-control" id="address_line" name="address_line" rows="3" placeholder="Sokak, cadde, apartman, daire no vb." required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="saveAddress()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Adres Düzenleme Modal -->
+<div class="modal fade" id="editAddressModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Adres Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editAddressForm">
+                    <input type="hidden" id="edit_address_id" name="address_id">
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_title" class="form-label">Adres Başlığı *</label>
+                            <input type="text" class="form-control" id="edit_title" name="title" placeholder="Ev, İş, vb." required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" id="edit_is_default" name="is_default">
+                                <label class="form-check-label" for="edit_is_default">
+                                    Varsayılan adres olarak ayarla
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_first_name" class="form-label">Ad *</label>
+                            <input type="text" class="form-control" id="edit_first_name" name="first_name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_last_name" class="form-label">Soyad *</label>
+                            <input type="text" class="form-control" id="edit_last_name" name="last_name" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_phone" class="form-label">Telefon *</label>
+                        <input type="tel" class="form-control" id="edit_phone" name="phone" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_city" class="form-label">İl *</label>
+                            <select class="form-select" id="edit_city" name="city" required>
+                                <option value="">İl Seçin</option>
+                                <option value="İstanbul">İstanbul</option>
+                                <option value="Ankara">Ankara</option>
+                                <option value="İzmir">İzmir</option>
+                                <option value="Bursa">Bursa</option>
+                                <option value="Antalya">Antalya</option>
+                                <!-- Diğer iller eklenebilir -->
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_district" class="form-label">İlçe *</label>
+                            <input type="text" class="form-control" id="edit_district" name="district" placeholder="İlçe" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="edit_neighborhood" class="form-label">Mahalle</label>
+                            <input type="text" class="form-control" id="edit_neighborhood" name="neighborhood" placeholder="Mahalle">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="edit_postal_code" class="form-label">Posta Kodu</label>
+                            <input type="text" class="form-control" id="edit_postal_code" name="postal_code" placeholder="34000">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_address_line" class="form-label">Adres *</label>
+                        <textarea class="form-control" id="edit_address_line" name="address_line" rows="3" placeholder="Sokak, cadde, apartman, daire no vb." required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="updateAddress()">Güncelle</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function saveAddress() {
+    const form = document.getElementById('addAddressForm');
+    const formData = new FormData(form);
+    
+    const data = {
+        title: formData.get('title'),
+        first_name: formData.get('first_name'),
+        last_name: formData.get('last_name'),
+        phone: formData.get('phone'),
+        city: formData.get('city'),
+        district: formData.get('district'),
+        neighborhood: formData.get('neighborhood'),
+        address_line: formData.get('address_line'),
+        postal_code: formData.get('postal_code'),
+        is_default: formData.get('is_default') === 'on'
+    };
+    
+    fetch('/address/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Hata: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    });
+}
+
+function editAddress(addressId) {
+    // Adres bilgilerini al
+    fetch(`/address/${addressId}/get`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const address = data.address;
+            
+            // Form alanlarını doldur
+            document.getElementById('edit_address_id').value = address.id;
+            document.getElementById('edit_title').value = address.title;
+            document.getElementById('edit_first_name').value = address.first_name;
+            document.getElementById('edit_last_name').value = address.last_name;
+            document.getElementById('edit_phone').value = address.phone;
+            document.getElementById('edit_city').value = address.city;
+            document.getElementById('edit_district').value = address.district;
+            document.getElementById('edit_neighborhood').value = address.neighborhood || '';
+            document.getElementById('edit_postal_code').value = address.postal_code || '';
+            document.getElementById('edit_address_line').value = address.address_line;
+            document.getElementById('edit_is_default').checked = address.is_default;
+            
+            // Modal'ı aç
+            const modal = new bootstrap.Modal(document.getElementById('editAddressModal'));
+            modal.show();
+        } else {
+            alert('Adres bilgileri alınamadı: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    });
+}
+
+function updateAddress() {
+    const form = document.getElementById('editAddressForm');
+    const formData = new FormData(form);
+    const addressId = formData.get('address_id');
+    
+    const data = {
+        title: formData.get('title'),
+        first_name: formData.get('first_name'),
+        last_name: formData.get('last_name'),
+        phone: formData.get('phone'),
+        city: formData.get('city'),
+        district: formData.get('district'),
+        neighborhood: formData.get('neighborhood'),
+        address_line: formData.get('address_line'),
+        postal_code: formData.get('postal_code'),
+        is_default: formData.get('is_default') === 'on'
+    };
+    
+    fetch(`/address/${addressId}/edit`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Hata: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    });
+}
+
+function setDefaultAddress(addressId) {
+    if (confirm('Bu adresi varsayılan adres olarak ayarlamak istediğinizden emin misiniz?')) {
+        fetch(`/address/${addressId}/set-default`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Hata: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+        });
+    }
+}
+
+function deleteAddress(addressId) {
+    if (confirm('Bu adresi silmek istediğinizden emin misiniz?\n\nBu işlem geri alınamaz.')) {
+        // Butonu devre dışı bırak
+        const deleteButton = document.querySelector(`[onclick="deleteAddress(${addressId})"]`);
+        if (deleteButton) {
+            deleteButton.disabled = true;
+            deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Siliniyor...';
+        }
+        
+        fetch(`/address/${addressId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                alert('✅ ' + data.message);
+                location.reload();
+            } else {
+                alert('❌ Hata: ' + data.error);
+                // Butonu tekrar aktif et
+                if (deleteButton) {
+                    deleteButton.disabled = false;
+                    deleteButton.innerHTML = '<i class="fas fa-trash"></i> Sil';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Delete error:', error);
+            alert('❌ Bir hata oluştu. Lütfen tekrar deneyin.\n\nHata: ' + error.message);
+            // Butonu tekrar aktif et
+            if (deleteButton) {
+                deleteButton.disabled = false;
+                deleteButton.innerHTML = '<i class="fas fa-trash"></i> Sil';
+            }
+        });
+    }
+}
+</script>
+{% endblock %} 

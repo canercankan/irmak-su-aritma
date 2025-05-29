@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Üye Ol - Irmak Su Arıtma{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4><i class="fas fa-user-plus"></i> Üye Ol</h4>
+                </div>
+                <div class="card-body">
+                    <form id="registerForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label">Ad *</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label">Soyad *</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-posta *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Telefon *</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="0555 123 45 67" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Şifre *</label>
+                            <input type="password" class="form-control" id="password" name="password" minlength="6" required>
+                            <div class="form-text">En az 6 karakter olmalıdır.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">Şifre Tekrar *</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Kullanım şartlarını</a> kabul ediyorum *
+                            </label>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus"></i> Üye Ol
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <hr>
+                    <div class="text-center">
+                        <p>Zaten hesabınız var mı? <a href="{{ url_for('customer_login') }}">Giriş Yapın</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kullanım Şartları Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Kullanım Şartları</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Genel Şartlar</h6>
+                <p>Bu web sitesini kullanarak aşağıdaki şartları kabul etmiş sayılırsınız.</p>
+                
+                <h6>2. Gizlilik</h6>
+                <p>Kişisel bilgileriniz gizli tutulacak ve üçüncü şahıslarla paylaşılmayacaktır.</p>
+                
+                <h6>3. Sipariş ve Teslimat</h6>
+                <p>Siparişleriniz onaylandıktan sonra en kısa sürede hazırlanacak ve size ulaştırılacaktır.</p>
+                
+                <h6>4. İletişim</h6>
+                <p>Herhangi bir sorunuz için bizimle iletişime geçebilirsiniz.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    
+    if (password !== confirmPassword) {
+        alert('Şifreler eşleşmiyor!');
+        return;
+    }
+    
+    const formData = {
+        first_name: document.getElementById('first_name').value,
+        last_name: document.getElementById('last_name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        password: password
+    };
+    
+    fetch('/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.href = '/login';
+        } else {
+            alert('Hata: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    });
+});
+</script>
+{% endblock %} 

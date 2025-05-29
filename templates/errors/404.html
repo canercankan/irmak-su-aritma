@@ -1,0 +1,18 @@
+{% extends "error_base.html" %}
+
+{% block title %}404 - Sayfa Bulunamadı{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <h1 class="display-1 text-primary mb-4">404</h1>
+            <h2 class="mb-4">Sayfa Bulunamadı</h2>
+            <p class="lead mb-4">Üzgünüz, aradığınız sayfa bulunamadı.</p>
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-home me-2"></i>Ana Sayfaya Dön
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

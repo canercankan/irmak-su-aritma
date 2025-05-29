@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}{{ part.name }} - Irmak Su Arıtma{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="text-center mb-4">
+                <img src="{{ part.image }}" class="img-fluid" alt="{{ part.name }}" style="max-height: 500px; width: auto; object-fit: contain;">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h1 class="display-4 mb-4">{{ part.name }}</h1>
+            <p class="lead mb-4">{{ part.description }}</p>
+            {% if part.price > 0 %}
+            <div class="mb-4">
+                <h3 class="text-primary">Fiyat: {{ part.price }} TL</h3>
+            </div>
+            <div class="d-flex gap-3 mt-4">
+                <button class="btn btn-primary btn-lg" onclick="addToCart({{ part.id }}, '{{ part.name }}', {{ part.price }}, 'spare_part')">
+                    <i class="fas fa-cart-plus"></i> Sepete Ekle
+                </button>
+                <a href="https://wa.me/905448113105?text={{ part.name }} hakkında bilgi almak istiyorum" class="btn btn-success btn-lg" target="_blank">
+                    <i class="fab fa-whatsapp"></i> WhatsApp'tan Bilgi Al
+                </a>
+            </div>
+            {% else %}
+            <div class="mb-4">
+                <h3 class="text-muted">Fiyat bilgisi için iletişime geçin</h3>
+            </div>
+            <div class="text-center mt-4">
+                <a href="https://wa.me/905448113105?text={{ part.name }} hakkında bilgi almak istiyorum" class="btn btn-success btn-lg" target="_blank">
+                    <i class="fab fa-whatsapp"></i> WhatsApp'tan Bilgi Al
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+function addToCart(id, name, price, type) {
+    const numericPrice = parseFloat(price);
+    
+    const existingItem = cart.find(item => item.id === id && item.type === type);
+    
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({
+            id: id,
+            name: name,
+            price: numericPrice,
+            type: type,
+            quantity: 1
+        });
+    }
+    
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCounter();
+    
+    // Başarı mesajı
+    showToast(`${name} sepete eklendi!`, 'success');
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.innerHTML = `<i class="fas fa-check"></i> ${message}`;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : '#dc3545'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 5px;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+function updateCartCounter() {
+    const cartCounter = document.querySelector('.cart-counter');
+    if (cartCounter) {
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        cartCounter.textContent = totalItems;
+        cartCounter.style.display = totalItems > 0 ? 'inline' : 'none';
+    }
+}
+
+// Sayfa yüklendiğinde sepet sayacını güncelle
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartCounter();
+});
+
+// CSS animasyonları
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %} 

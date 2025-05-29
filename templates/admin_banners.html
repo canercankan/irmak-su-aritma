@@ -1,0 +1,473 @@
+{% extends "base.html" %}
+
+{% block title %}Banner Yönetimi - Admin Panel{% endblock %}
+
+{% block content %}
+<!-- Admin Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="/admin/stats">
+            <i class="fas fa-cog"></i> Admin Panel
+        </a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" href="/admin/stats">
+                <i class="fas fa-chart-bar"></i> İstatistikler
+            </a>
+            <a class="nav-link" href="/admin/products">
+                <i class="fas fa-box"></i> Ürün Yönetimi
+            </a>
+            <a class="nav-link active" href="/admin/banners">
+                <i class="fas fa-bullhorn"></i> Banner Yönetimi
+            </a>
+            <a class="nav-link" href="/admin/images">
+                <i class="fas fa-images"></i> Resim Yönetimi
+            </a>
+            <a class="nav-link" href="/admin/logout">
+                <i class="fas fa-sign-out-alt"></i> Çıkış
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-bullhorn me-2"></i>Banner Yönetimi</h2>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addBannerModal">
+                    <i class="fas fa-plus me-2"></i>Yeni Banner Ekle
+                </button>
+            </div>
+
+            <!-- Banner Listesi -->
+            <div class="row">
+                {% for banner in banners %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 {% if not banner.is_active %}opacity-50{% endif %}">
+                        <div class="card-header d-flex justify-content-between align-items-center" 
+                             style="background-color: {{ banner.background_color }}; color: {{ banner.text_color }};">
+                            <h6 class="mb-0">{{ banner.title }}</h6>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-light btn-sm" onclick="editBanner({{ banner.id }})" title="Düzenle">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-warning btn-sm" onclick="toggleBanner({{ banner.id }})" title="Aktif/Pasif">
+                                    <i class="fas fa-{% if banner.is_active %}eye-slash{% else %}eye{% endif %}"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteBanner({{ banner.id }})" title="Sil">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            {% if banner.subtitle %}
+                            <p class="card-text"><strong>Alt Başlık:</strong> {{ banner.subtitle }}</p>
+                            {% endif %}
+                            {% if banner.description %}
+                            <p class="card-text">{{ banner.description }}</p>
+                            {% endif %}
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted">Tip: {{ banner.banner_type }}</small>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Öncelik: {{ banner.order_priority }}</small>
+                                </div>
+                            </div>
+                            {% if banner.button_text and banner.button_link %}
+                            <div class="mt-2">
+                                <a href="{{ banner.button_link }}" class="btn btn-sm" 
+                                   style="background-color: {{ banner.background_color }}; color: {{ banner.text_color }};">
+                                    {{ banner.button_text }}
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer text-muted">
+                            <small>
+                                Oluşturulma: {{ banner.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                {% if banner.updated_at != banner.created_at %}
+                                | Güncelleme: {{ banner.updated_at.strftime('%d.%m.%Y %H:%M') }}
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if not banners %}
+            <div class="text-center py-5">
+                <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">Henüz banner eklenmemiş</h4>
+                <p class="text-muted">İlk banner'ınızı eklemek için yukarıdaki butonu kullanın.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Banner Ekleme Modal -->
+<div class="modal fade" id="addBannerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Banner Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addBannerForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Başlık *</label>
+                                <input type="text" class="form-control" name="title" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Banner Tipi *</label>
+                                <select class="form-select" name="banner_type" required>
+                                    <option value="campaign">Kampanya</option>
+                                    <option value="delivery">Teslimat</option>
+                                    <option value="info">Bilgi</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Alt Başlık</label>
+                        <input type="text" class="form-control" name="subtitle">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Buton Metni</label>
+                                <input type="text" class="form-control" name="button_text">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Buton Linki</label>
+                                <input type="url" class="form-control" name="button_link">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Arka Plan Rengi</label>
+                                <input type="color" class="form-control form-control-color" name="background_color" value="#007bff">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Yazı Rengi</label>
+                                <input type="color" class="form-control form-control-color" name="text_color" value="#ffffff">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Öncelik Sırası</label>
+                                <input type="number" class="form-control" name="order_priority" value="1" min="1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Sol Çerçeve Resmi</label>
+                                <input type="file" class="form-control" name="left_image" accept="image/*">
+                                <small class="form-text text-muted">JPG, PNG veya GIF formatında resim yükleyebilirsiniz.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Sağ Çerçeve Resmi</label>
+                                <input type="file" class="form-control" name="right_image" accept="image/*">
+                                <small class="form-text text-muted">JPG, PNG veya GIF formatında resim yükleyebilirsiniz.</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="is_active" id="is_active" checked>
+                            <label class="form-check-label" for="is_active">
+                                Aktif
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-success">Banner Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Banner Düzenleme Modal -->
+<div class="modal fade" id="editBannerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Banner Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editBannerForm">
+                <input type="hidden" id="edit_banner_id" name="banner_id">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Başlık *</label>
+                                <input type="text" class="form-control" id="edit_title" name="title" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Banner Tipi *</label>
+                                <select class="form-select" id="edit_banner_type" name="banner_type" required>
+                                    <option value="campaign">Kampanya</option>
+                                    <option value="delivery">Teslimat</option>
+                                    <option value="info">Bilgi</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Alt Başlık</label>
+                        <input type="text" class="form-control" id="edit_subtitle" name="subtitle">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Buton Metni</label>
+                                <input type="text" class="form-control" id="edit_button_text" name="button_text">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Buton Linki</label>
+                                <input type="url" class="form-control" id="edit_button_link" name="button_link">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Arka Plan Rengi</label>
+                                <input type="color" class="form-control form-control-color" id="edit_background_color" name="background_color">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Yazı Rengi</label>
+                                <input type="color" class="form-control form-control-color" id="edit_text_color" name="text_color">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label class="form-label">Öncelik Sırası</label>
+                                <input type="number" class="form-control" id="edit_order_priority" name="order_priority" min="1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Sol Çerçeve Resmi</label>
+                                <input type="file" class="form-control" id="edit_left_image" name="left_image" accept="image/*">
+                                <small class="form-text text-muted">JPG, PNG veya GIF formatında resim yükleyebilirsiniz.</small>
+                                <div id="current_left_image_info" class="mt-2" style="display: none;">
+                                    <small class="text-info">
+                                        <i class="fas fa-info-circle"></i> 
+                                        Mevcut resim: <span id="current_left_image_name"></span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Sağ Çerçeve Resmi</label>
+                                <input type="file" class="form-control" id="edit_right_image" name="right_image" accept="image/*">
+                                <small class="form-text text-muted">JPG, PNG veya GIF formatında resim yükleyebilirsiniz.</small>
+                                <div id="current_right_image_info" class="mt-2" style="display: none;">
+                                    <small class="text-info">
+                                        <i class="fas fa-info-circle"></i> 
+                                        Mevcut resim: <span id="current_right_image_name"></span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="edit_is_active" name="is_active">
+                            <label class="form-check-label" for="edit_is_active">
+                                Aktif
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Güncelle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Banner ekleme
+document.getElementById('addBannerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('/admin/banner/add', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ ' + data.message);
+            location.reload();
+        } else {
+            alert('❌ ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('❌ Bir hata oluştu: ' + error);
+    });
+});
+
+// Banner düzenleme
+function editBanner(bannerId) {
+    // Banner bilgilerini API'den al
+    fetch(`/admin/banner/${bannerId}/get`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const banner = data.banner;
+                
+                // Modal form alanlarını doldur
+                document.getElementById('edit_banner_id').value = banner.id;
+                document.getElementById('edit_title').value = banner.title || '';
+                document.getElementById('edit_subtitle').value = banner.subtitle || '';
+                document.getElementById('edit_description').value = banner.description || '';
+                document.getElementById('edit_button_text').value = banner.button_text || '';
+                document.getElementById('edit_button_link').value = banner.button_link || '';
+                document.getElementById('edit_banner_type').value = banner.banner_type || 'campaign';
+                document.getElementById('edit_background_color').value = banner.background_color || '#007bff';
+                document.getElementById('edit_text_color').value = banner.text_color || '#ffffff';
+                document.getElementById('edit_order_priority').value = banner.order_priority || 1;
+                document.getElementById('edit_is_active').checked = banner.is_active;
+                
+                // Mevcut resim bilgilerini göster
+                if (banner.left_image) {
+                    document.getElementById('current_left_image_name').textContent = banner.left_image;
+                    document.getElementById('current_left_image_info').style.display = 'block';
+                } else {
+                    document.getElementById('current_left_image_info').style.display = 'none';
+                }
+                
+                if (banner.right_image) {
+                    document.getElementById('current_right_image_name').textContent = banner.right_image;
+                    document.getElementById('current_right_image_info').style.display = 'block';
+                } else {
+                    document.getElementById('current_right_image_info').style.display = 'none';
+                }
+                
+                // Modal'ı aç
+                const modal = new bootstrap.Modal(document.getElementById('editBannerModal'));
+                modal.show();
+            } else {
+                alert('❌ Banner bilgileri alınamadı: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('❌ Bir hata oluştu: ' + error);
+        });
+}
+
+document.getElementById('editBannerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const bannerId = document.getElementById('edit_banner_id').value;
+    const formData = new FormData(this);
+    
+    fetch(`/admin/banner/${bannerId}/edit`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ ' + data.message);
+            location.reload();
+        } else {
+            alert('❌ ' + data.message);
+        }
+    })
+    .catch(error => {
+        alert('❌ Bir hata oluştu: ' + error);
+    });
+});
+
+// Banner aktif/pasif
+function toggleBanner(bannerId) {
+    if (confirm('Banner durumunu değiştirmek istediğinizden emin misiniz?')) {
+        fetch(`/admin/banner/${bannerId}/toggle`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ ' + data.message);
+                location.reload();
+            } else {
+                alert('❌ ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('❌ Bir hata oluştu: ' + error);
+        });
+    }
+}
+
+// Banner silme
+function deleteBanner(bannerId) {
+    if (confirm('Bu banner\'ı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!')) {
+        fetch(`/admin/banner/${bannerId}/delete`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ ' + data.message);
+                location.reload();
+            } else {
+                alert('❌ ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('❌ Bir hata oluştu: ' + error);
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Yedek Parça ve Ekipmanlar - Irmak Su Arıtma{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2 text-center">
+            <h1 class="display-4 mb-4">Yedek Parça ve Ekipmanlar</h1>
+            <p class="lead mb-4">Kaliteli ve güvenilir su arıtma yedek parçaları için doğru adres.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for part in spare_parts %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="text-center mb-4">
+                        <img src="{{ part.image }}" class="img-fluid" alt="{{ part.name }}" style="max-height: 300px; width: auto; object-fit: contain;">
+                    </div>
+                    <h5 class="card-title text-center mb-3">{{ part.name }}</h5>
+                    <p class="card-text mb-4">{{ part.description }}</p>
+                    {% if part.price > 0 %}
+                    <p class="card-text text-center mb-4"><strong class="text-primary" style="font-size: 1.2em;">Fiyat: {{ part.price }} TL</strong></p>
+                    {% else %}
+                    <p class="card-text text-center mb-4"><strong class="text-muted" style="font-size: 1.1em;">Fiyat bilgisi için iletişime geçin</strong></p>
+                    {% endif %}
+                    <div class="text-center mt-auto">
+                        <div class="d-flex gap-2 justify-content-center">
+                            <a href="{{ url_for('spare_part_detail', part_id=part.id) }}" class="btn btn-outline-primary">Detaylar</a>
+                            {% if part.price > 0 %}
+                            <button class="btn btn-primary" onclick="addToCart({{ part.id }}, '{{ part.name }}', {{ part.price }}, 'spare_part')">
+                                <i class="fas fa-cart-plus"></i> Sepete Ekle
+                            </button>
+                            {% else %}
+                            <button class="btn btn-outline-success" onclick="contactForPrice('{{ part.name }}')">
+                                <i class="fas fa-phone"></i> Fiyat Sor
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+function addToCart(id, name, price, type) {
+    const numericPrice = parseFloat(price);
+    
+    const existingItem = cart.find(item => item.id === id && item.type === type);
+    
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({
+            id: id,
+            name: name,
+            price: numericPrice,
+            type: type,
+            quantity: 1
+        });
+    }
+    
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCounter();
+    
+    // Başarı mesajı
+    showToast(`${name} sepete eklendi!`, 'success');
+}
+
+function contactForPrice(productName) {
+    const message = `${productName} için fiyat bilgisi almak istiyorum.`;
+    const whatsappUrl = `https://wa.me/905448113105?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.innerHTML = `<i class="fas fa-check"></i> ${message}`;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : '#dc3545'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 5px;
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+function updateCartCounter() {
+    const cartCounter = document.querySelector('.cart-counter');
+    if (cartCounter) {
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        cartCounter.textContent = totalItems;
+        cartCounter.style.display = totalItems > 0 ? 'inline' : 'none';
+    }
+}
+
+// Sayfa yüklendiğinde sepet sayacını güncelle
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartCounter();
+});
+
+// CSS animasyonları
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %} 

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}İletişim - Cenap Su Arıtma{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">İletişim</h1>
+
+    <div class="row">
+        <!-- İletişim Bilgileri -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">İletişim Bilgileri</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-phone me-2 text-primary"></i>
+                            <strong>Telefon:</strong> <a href="tel:+905448113105">0544 811 31 05</a>
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-envelope me-2 text-primary"></i>
+                            <strong>E-posta:</strong> <a href="mailto:cenapoktay@gmail.com">cenapoktay@gmail.com</a>
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                            <strong>Adres:</strong> İstanbul, Türkiye
+                        </li>
+                    </ul>
+
+                    <h5 class="mt-4 mb-3">Hızlı İletişim</h5>
+                    <div class="d-grid gap-2">
+                        <a href="https://wa.me/905448113105?text=Merhaba, su arıtma sistemi hakkında bilgi almak istiyorum." class="btn btn-success">
+                            <i class="fab fa-whatsapp me-2"></i> WhatsApp'tan Mesaj Gönder
+                        </a>
+                        <a href="https://t.me/cenapsuaritma" class="btn btn-primary">
+                            <i class="fab fa-telegram me-2"></i> Telegram'dan Mesaj Gönder
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- İletişim Formu -->
+        <div class="col-md-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Bize Mesaj Gönderin</h5>
+                    <form id="contactForm">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Adınız Soyadınız *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-posta Adresiniz *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Telefon Numaranız</label>
+                            <input type="tel" class="form-control" id="phone" name="phone">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">Konu *</label>
+                            <select class="form-select" id="subject" name="subject" required>
+                                <option value="">Seçiniz</option>
+                                <option value="bilgi">Ürün Bilgisi</option>
+                                <option value="fiyat">Fiyat Bilgisi</option>
+                                <option value="teknik">Teknik Destek</option>
+                                <option value="diger">Diğer</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Mesajınız *</label>
+                            <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">Mesaj Gönder</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        subject: document.getElementById('subject').value,
+        message: document.getElementById('message').value
+    };
+
+    fetch('/send_message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert('Mesajınız başarıyla gönderildi!');
+            this.reset();
+        } else {
+            alert('Hata: ' + (data.error || 'Bir hata oluştu'));
+        }
+    })
+    .catch(error => {
+        alert('Bir hata oluştu: ' + error);
+    });
+});
+</script>
+{% endblock %}

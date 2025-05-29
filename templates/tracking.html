@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Müşteri Takibi{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Toplam Müşteri</h5>
+                    <p class="h2 mb-0">{{ stats.total_customers }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Aktif Müşteriler</h5>
+                    <p class="h2 mb-0">{{ stats.active_customers }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Bekleyen Değişimler</h5>
+                    <p class="h2 mb-0">{{ stats.pending_changes }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Müşteri Listesi</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Müşteri Adı</th>
+                            <th>Telefon</th>
+                            <th>Model</th>
+                            <th>Son Değişim</th>
+                            <th>Sonraki Değişim</th>
+                            <th>Kalan Gün</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer in customers %}
+                        <tr>
+                            <td>{{ customer.name }}</td>
+                            <td>{{ customer.phone }}</td>
+                            <td>{{ customer.model }}</td>
+                            <td>{{ customer.last_change.strftime('%d-%m-%Y') if customer.last_change else 'Belirtilmemiş' }}</td>
+                            <td>{{ customer.next_change.strftime('%d-%m-%Y') if customer.next_change else 'Belirtilmemiş' }}</td>
+                            <td>
+                                {% if customer.remaining_days %}
+                                    {% if customer.remaining_days < 0 %}
+                                        <span class="text-danger">{{ customer.remaining_days|abs|int }} gün gecikmiş</span>
+                                    {% else %}
+                                        <span class="text-success">{{ customer.remaining_days|int }} gün kaldı</span>
+                                    {% endif %}
+                                {% else %}
+                                    Belirtilmemiş
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Üye Olmadan Sipariş Ver - Irmak Su Arıtma{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-shopping-cart"></i> Üye Olmadan Sipariş Ver</h4>
+                    <p class="mb-0 text-muted">Hızlı ve kolay sipariş için bilgilerinizi doldurun</p>
+                </div>
+                <div class="card-body">
+                    <form id="guestOrderForm">
+                        <!-- Kişisel Bilgiler -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3"><i class="fas fa-user"></i> Kişisel Bilgiler</h5>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label">Ad *</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label">Soyad *</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Telefon *</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">E-posta</label>
+                                <input type="email" class="form-control" id="email" name="email">
+                            </div>
+                        </div>
+
+                        <!-- Adres Bilgileri -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3"><i class="fas fa-map-marker-alt"></i> Teslimat Adresi</h5>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="city" class="form-label">İl *</label>
+                                <select class="form-select" id="city" name="city" required>
+                                    <option value="">İl Seçin</option>
+                                    <option value="İstanbul">İstanbul</option>
+                                    <option value="Ankara">Ankara</option>
+                                    <option value="İzmir">İzmir</option>
+                                    <option value="Bursa">Bursa</option>
+                                    <option value="Antalya">Antalya</option>
+                                    <option value="Adana">Adana</option>
+                                    <option value="Konya">Konya</option>
+                                    <option value="Gaziantep">Gaziantep</option>
+                                    <option value="Mersin">Mersin</option>
+                                    <option value="Kayseri">Kayseri</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="district" class="form-label">İlçe *</label>
+                                <input type="text" class="form-control" id="district" name="district" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="neighborhood" class="form-label">Mahalle</label>
+                                <input type="text" class="form-control" id="neighborhood" name="neighborhood">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="postal_code" class="form-label">Posta Kodu</label>
+                                <input type="text" class="form-control" id="postal_code" name="postal_code">
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label for="address_line" class="form-label">Adres *</label>
+                                <textarea class="form-control" id="address_line" name="address_line" rows="3" required></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Sipariş Notları -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3"><i class="fas fa-sticky-note"></i> Sipariş Notları</h5>
+                                <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Varsa özel taleplerinizi buraya yazabilirsiniz..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Ödeme Yöntemi -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3"><i class="fas fa-credit-card"></i> Ödeme Yöntemi</h5>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="payment_method" id="cash_on_delivery" value="cash_on_delivery" checked>
+                                    <label class="form-check-label" for="cash_on_delivery">
+                                        <i class="fas fa-money-bill-wave text-success"></i> Kapıda Ödeme
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Şartlar ve Koşullar -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="terms_agreement" required>
+                                    <label class="form-check-label" for="terms_agreement">
+                                        <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Şartlar ve koşulları</a> kabul ediyorum *
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sipariş Ver Butonu -->
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-success btn-lg w-100" id="submitOrderBtn">
+                                    <i class="fas fa-check"></i> Siparişi Tamamla
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sipariş Özeti -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> Sipariş Özeti</h5>
+                </div>
+                <div class="card-body">
+                    <div id="orderSummary">
+                        <!-- Sepet içeriği JavaScript ile doldurulacak -->
+                    </div>
+                    
+                    <!-- Güvenlik Özellikleri -->
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6 class="text-success mb-2"><i class="fas fa-shield-alt"></i> Güvenlik Özellikleri</h6>
+                        <ul class="list-unstyled mb-0 small">
+                            <li><i class="fas fa-check text-success"></i> Ücretsiz Kargo</li>
+                            <li><i class="fas fa-check text-success"></i> Ücretsiz Kurulum</li>
+                            <li><i class="fas fa-check text-success"></i> 2 Yıl Garanti</li>
+                            <li><i class="fas fa-check text-success"></i> 7/24 Teknik Destek</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Şartlar ve Koşullar Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Şartlar ve Koşullar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>1. Genel Şartlar</h6>
+                <p>Bu sipariş ile birlikte aşağıdaki şartları kabul etmiş sayılırsınız:</p>
+                <ul>
+                    <li>Ürünler kapıda ödeme ile teslim edilir</li>
+                    <li>Kurulum ücretsizdir</li>
+                    <li>2 yıl garanti kapsamındadır</li>
+                    <li>Teknik destek 7/24 sağlanır</li>
+                </ul>
+                
+                <h6>2. Teslimat</h6>
+                <p>Siparişiniz 2-5 iş günü içerisinde adresinize teslim edilir.</p>
+                
+                <h6>3. İptal ve İade</h6>
+                <p>Sipariş verdikten sonra 1 saat içerisinde iptal edebilirsiniz.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sepet içeriğini yükle
+    loadOrderSummary();
+    
+    // Form submit
+    document.getElementById('guestOrderForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitGuestOrder();
+    });
+});
+
+function loadOrderSummary() {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const summaryDiv = document.getElementById('orderSummary');
+    
+    if (cart.length === 0) {
+        summaryDiv.innerHTML = '<p class="text-muted">Sepetiniz boş</p>';
+        document.getElementById('submitOrderBtn').disabled = true;
+        return;
+    }
+    
+    let total = 0;
+    let html = '<div class="order-items">';
+    
+    cart.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+        
+        html += `
+            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                <div>
+                    <div class="fw-bold">${item.name}</div>
+                    <small class="text-muted">${item.quantity} x ${item.price} TL</small>
+                </div>
+                <div class="fw-bold">${itemTotal} TL</div>
+            </div>
+        `;
+    });
+    
+    html += `
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+            <div class="fw-bold h5 mb-0">Toplam:</div>
+            <div class="fw-bold h5 mb-0 text-success">${total} TL</div>
+        </div>
+    `;
+    
+    summaryDiv.innerHTML = html;
+}
+
+function submitGuestOrder() {
+    const form = document.getElementById('guestOrderForm');
+    const formData = new FormData(form);
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    
+    if (cart.length === 0) {
+        alert('Sepetiniz boş!');
+        return;
+    }
+    
+    // Form verilerini topla
+    const orderData = {
+        first_name: formData.get('first_name'),
+        last_name: formData.get('last_name'),
+        phone: formData.get('phone'),
+        email: formData.get('email'),
+        city: formData.get('city'),
+        district: formData.get('district'),
+        neighborhood: formData.get('neighborhood'),
+        address_line: formData.get('address_line'),
+        postal_code: formData.get('postal_code'),
+        notes: formData.get('notes'),
+        cart_items: cart
+    };
+    
+    // Butonu devre dışı bırak
+    const submitBtn = document.getElementById('submitOrderBtn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> İşleniyor...';
+    
+    // Siparişi gönder
+    fetch('/guest-order/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Sepeti temizle
+            localStorage.removeItem('cart');
+            updateCartCounter();
+            
+            // Başarı mesajı göster
+            alert('🎉 ' + data.message + '\n\nSipariş Numaranız: ' + data.order_number);
+            
+            // Ana sayfaya yönlendir
+            window.location.href = '/';
+        } else {
+            alert('❌ ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Hata:', error);
+        alert('❌ Sipariş oluşturulurken bir hata oluştu!');
+    })
+    .finally(() => {
+        // Butonu tekrar aktif et
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+}
+</script>
+{% endblock %} 

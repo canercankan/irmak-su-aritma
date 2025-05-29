@@ -1,0 +1,587 @@
+{% extends "base.html" %}
+
+{% block title %}İstanbul Su Arıtma Sistemleri | Irmak Su Arıtma - Ücretsiz Montaj{% endblock %}
+
+{% block content %}
+<!-- Dinamik Banner'lar -->
+{% for banner in banners %}
+<div class="alert text-center mb-4 py-4 border-0 shadow-sm banner-depth-animation" 
+     style="background: linear-gradient(135deg, {{ banner.background_color }}, {{ banner.background_color }}dd, {{ banner.background_color }}aa); color: {{ banner.text_color }};">
+    
+    <div class="row align-items-center">
+        <!-- Sol Çerçeve -->
+        <div class="col-md-2">
+            <div class="banner-frame left-frame">
+                {% if banner.left_image %}
+                <img src="{{ url_for('static', filename='images/' + banner.left_image) }}" 
+                     alt="Sol Banner Resmi" 
+                     class="frame-image">
+                {% else %}
+                <div class="empty-frame">
+                    <i class="fas fa-image"></i>
+                    <p>Sol Resim</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Orta İçerik -->
+        <div class="col-md-8">
+            <h2 class="mb-3 fw-bold water-text" style="color: {{ banner.text_color }};">
+                {{ banner.title }}
+            </h2>
+            {% if banner.subtitle %}
+            <p class="mb-2 fs-5 banner-subtitle water-text" style="color: {{ banner.text_color }};">
+                {{ banner.subtitle }}
+            </p>
+            {% endif %}
+            {% if banner.description %}
+            <p class="mb-3 fs-6 banner-description water-text" style="color: {{ banner.text_color }};">
+                {{ banner.description }}
+            </p>
+            {% endif %}
+            {% if banner.button_text and banner.button_link %}
+            <a href="{{ banner.button_link }}" class="btn btn-lg px-4 py-2 banner-button-animate" 
+               style="background-color: {{ banner.text_color }}; color: {{ banner.background_color }}; border: 2px solid {{ banner.text_color }};">
+                {{ banner.button_text }}
+            </a>
+            {% endif %}
+        </div>
+        
+        <!-- Sağ Çerçeve -->
+        <div class="col-md-2">
+            <div class="banner-frame right-frame">
+                {% if banner.right_image %}
+                <img src="{{ url_for('static', filename='images/' + banner.right_image) }}" 
+                     alt="Sağ Banner Resmi" 
+                     class="frame-image">
+                {% else %}
+                <div class="empty-frame">
+                    <i class="fas fa-image"></i>
+                    <p>Sağ Resim</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Banner Derinlik ve Perspektif Animasyonları -->
+<style>
+/* Yatay kaydırmayı engelle */
+body {
+    overflow-x: hidden;
+}
+
+.container {
+    overflow-x: hidden;
+}
+
+/* Banner temel stil - sürekli animasyonlu */
+.banner-depth-animation {
+    position: relative;
+    overflow: hidden;
+    opacity: 1;
+    transform: translateY(0);
+    animation: bannerPulse 4s ease-in-out infinite;
+}
+
+/* Banner sürekli pulse animasyonu */
+@keyframes bannerPulse {
+    0%, 100% {
+        transform: scale(1) translateY(0);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+        transform: scale(1.02) translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* Çerçeve Tasarımları */
+.banner-frame {
+    width: 100%;
+    height: 120px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+    animation: frameFloat 5s ease-in-out infinite;
+}
+
+.banner-frame:hover {
+    transform: scale(1.05);
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes frameFloat {
+    0%, 100% {
+        transform: translateY(0) rotateY(0deg);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    50% {
+        transform: translateY(-3px) rotateY(2deg);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+}
+
+.left-frame {
+    animation-delay: 0s;
+}
+
+.right-frame {
+    animation-delay: 2.5s;
+}
+
+/* Çerçeve içindeki resim */
+.frame-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.frame-image:hover {
+    transform: scale(1.1);
+}
+
+/* Boş çerçeve tasarımı */
+.empty-frame {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+}
+
+.empty-frame i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    opacity: 0.6;
+}
+
+.empty-frame p {
+    margin: 0;
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+/* Başlık sürekli animasyonu - harfler düşme */
+.banner-depth-animation h2 {
+    animation: titleFloat 6s ease-in-out infinite;
+}
+
+@keyframes titleFloat {
+    0%, 100% {
+        transform: translateY(0) rotateX(0deg);
+    }
+    25% {
+        transform: translateY(-3px) rotateX(2deg);
+    }
+    75% {
+        transform: translateY(3px) rotateX(-2deg);
+    }
+}
+
+/* Alt başlık sürekli büyüme animasyonu */
+.banner-subtitle {
+    animation: subtitleGrow 5s ease-in-out infinite;
+    animation-delay: 0.5s;
+}
+
+@keyframes subtitleGrow {
+    0%, 100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05) translateY(-2px);
+        opacity: 0.9;
+    }
+}
+
+/* Açıklama sürekli fade animasyonu */
+.banner-description {
+    animation: descriptionFade 7s ease-in-out infinite;
+    animation-delay: 1s;
+}
+
+@keyframes descriptionFade {
+    0%, 100% {
+        opacity: 0.8;
+        transform: translateX(0);
+    }
+    50% {
+        opacity: 1;
+        transform: translateX(2px);
+    }
+}
+
+/* Buton sürekli bounce animasyonu */
+.banner-button-animate {
+    animation: buttonBounce 3s ease-in-out infinite;
+    animation-delay: 1.5s;
+}
+
+@keyframes buttonBounce {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    25% {
+        transform: translateY(-3px) scale(1.02);
+    }
+    75% {
+        transform: translateY(2px) scale(0.98);
+    }
+}
+
+/* Gradient arka plan animasyonu */
+.banner-depth-animation {
+    background-size: 200% 200%;
+    animation: gradientShift 8s ease infinite, bannerPulse 4s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* Mobil uyumluluk */
+@media (max-width: 768px) {
+    .banner-frame {
+        height: 80px;
+        margin-bottom: 15px;
+    }
+    
+    .empty-frame i {
+        font-size: 18px;
+    }
+    
+    .empty-frame p {
+        font-size: 10px;
+    }
+}
+</style>
+
+<!-- Gerçekçi Su Efekti Scripti -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tüm banner'ları hemen görünür yap
+    document.querySelectorAll('.banner-depth-animation').forEach(banner => {
+        banner.classList.add('visible');
+        
+        // Su damlası efekti ekle
+        addWaterDropEffect(banner);
+        
+        // Gerçekçi yazı animasyonları
+        const waterTexts = banner.querySelectorAll('.water-text');
+        waterTexts.forEach((text, index) => {
+            // Orijinal metni sakla
+            const originalText = text.textContent;
+            text.setAttribute('data-text', originalText);
+            
+            // Gerçekçi harf dökülme animasyonu
+            setTimeout(() => {
+                text.style.animationDelay = `${index * 0.5}s`;
+                text.classList.add('water-flowing');
+                
+                // Harfleri gerçekçi şekilde dök
+                setTimeout(() => {
+                    createRealisticLetterDrop(text, originalText);
+                }, 1500); // Su akışı başladıktan sonra
+                
+            }, index * 800);
+        });
+        
+        // Musluk animasyonunu başlat
+        const tapContainer = banner.querySelector('.water-tap-container');
+        if (tapContainer) {
+            setTimeout(() => {
+                tapContainer.classList.add('tap-active');
+            }, 300);
+        }
+    });
+    
+    // Gerçekçi su akışı döngüsü
+    setInterval(() => {
+        document.querySelectorAll('.water-text').forEach((text, index) => {
+            // Hafif titreşim efekti
+            addRealisticWaterEffect(text, index * 300);
+            
+            // Harfleri yeniden dök (daha az sıklıkta)
+            if (Math.random() > 0.7) { // %30 şans
+                setTimeout(() => {
+                    const originalText = text.getAttribute('data-text');
+                    if (originalText) {
+                        createRealisticLetterDrop(text, originalText);
+                    }
+                }, index * 500);
+            }
+        });
+    }, 12000); // 12 saniyede bir
+});
+
+function addWaterDropEffect(banner) {
+    const tapContainer = banner.querySelector('.water-tap-container');
+    if (!tapContainer) return;
+    
+    // Su damlası elementleri oluştur
+    for (let i = 0; i < 3; i++) {
+        const dropElement = document.createElement('div');
+        dropElement.className = 'water-drop-effect';
+        dropElement.style.animationDelay = `${i * 0.8}s`;
+        tapContainer.appendChild(dropElement);
+    }
+}
+
+function createRealisticLetterDrop(textElement, originalText) {
+    if (!originalText) return;
+    
+    // Harfleri gerçekçi şekilde böl
+    const letters = originalText.split('').map((letter, letterIndex) => {
+        if (letter === ' ') return ' ';
+        
+        const delay = letterIndex * 0.08; // Daha hızlı dökülme
+        const randomOffset = (Math.random() - 0.5) * 10; // Rastgele sapma
+        
+        return `<span class="letter-drop" 
+                      style="animation-delay: ${delay}s; 
+                             transform: translateX(${randomOffset}px);
+                             opacity: 0;">${letter}</span>`;
+    }).join('');
+    
+    textElement.innerHTML = letters;
+    
+    // Harflerin animasyonunu başlat
+    const letterSpans = textElement.querySelectorAll('.letter-drop');
+    letterSpans.forEach((span, letterIndex) => {
+        setTimeout(() => {
+            span.style.opacity = '1';
+            span.style.animation = `realisticLetterDrop 3s ease-out forwards`;
+        }, letterIndex * 80);
+    });
+}
+
+function addRealisticWaterEffect(element, delay) {
+    setTimeout(() => {
+        // Hafif titreşim
+        element.style.transform = 'translateY(-1px) translateX(0.5px)';
+        element.style.filter = 'brightness(1.05) contrast(1.02)';
+        
+        setTimeout(() => {
+            element.style.transform = 'translateY(0) translateX(0)';
+            element.style.filter = 'brightness(1) contrast(1)';
+        }, 200);
+    }, delay);
+}
+
+// Musluk tıklama efekti - gerçekçi
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('water-tap-image')) {
+        // Musluk tıklandığında güçlü su akışı
+        const tapContainer = e.target.parentElement;
+        const waterStream = tapContainer.querySelector('.water-stream');
+        
+        if (waterStream) {
+            // Geçici güçlü akış
+            waterStream.style.animation = 'realWaterFlow 1.5s ease-in-out';
+            waterStream.style.opacity = '1';
+            waterStream.style.height = '80px';
+            waterStream.style.width = '4px';
+            
+            setTimeout(() => {
+                waterStream.style.animation = 'realWaterFlow 4s ease-in-out infinite';
+                waterStream.style.opacity = '';
+                waterStream.style.height = '';
+                waterStream.style.width = '';
+            }, 1500);
+        }
+        
+        // Ekstra su damlaları oluştur
+        createExtraWaterDrops(tapContainer);
+        
+        // Tüm yazıları anında yeniden dök
+        const banner = tapContainer.closest('.banner-depth-animation');
+        const waterTexts = banner.querySelectorAll('.water-text');
+        waterTexts.forEach((text, index) => {
+            setTimeout(() => {
+                const originalText = text.getAttribute('data-text');
+                if (originalText) {
+                    createRealisticLetterDrop(text, originalText);
+                }
+            }, index * 200);
+        });
+    }
+});
+
+function createExtraWaterDrops(tapContainer) {
+    for (let i = 0; i < 5; i++) {
+        const extraDrop = document.createElement('div');
+        extraDrop.className = 'water-drop-effect';
+        extraDrop.style.animationDelay = `${i * 0.2}s`;
+        extraDrop.style.left = `${110 + (Math.random() - 0.5) * 10}px`;
+        extraDrop.style.animationDuration = '1.5s';
+        tapContainer.appendChild(extraDrop);
+        
+        // 3 saniye sonra kaldır
+        setTimeout(() => {
+            if (extraDrop.parentNode) {
+                extraDrop.parentNode.removeChild(extraDrop);
+            }
+        }, 3000);
+    }
+}
+
+// Sayfa yüklendiğinde gerçekçi efektler
+window.addEventListener('load', function() {
+    // Tüm muslukları hafifçe titret
+    document.querySelectorAll('.water-tap-image').forEach(tap => {
+        tap.style.transition = 'all 0.3s ease';
+    });
+    
+    // Su sesini simüle et (görsel olarak)
+    setInterval(() => {
+        document.querySelectorAll('.water-stream').forEach(stream => {
+            if (Math.random() > 0.8) { // %20 şans
+                stream.style.opacity = '0.95';
+                setTimeout(() => {
+                    stream.style.opacity = '';
+                }, 100);
+            }
+        });
+    }, 2000);
+});
+</script>
+
+<div class="container">
+    <!-- SEO için H1 etiketi -->
+    <h1 class="text-center mb-4">İstanbul'da Profesyonel Su Arıtma Sistemleri ve Filtre Hizmetleri</h1>
+    
+    <!-- SEO için açıklayıcı paragraf -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card p-4">
+                <p class="lead text-center">İstanbul'da 15 yıllık deneyimimizle su arıtma sistemleri kurulumu, filtre değişimi ve bakım hizmetleri sunuyoruz. Tüm marka su filtrelerinin yedek parçaları mevcuttur. Ücretsiz keşif ve montaj hizmeti ile 2 yıl garanti veriyoruz.</p>
+                
+                <!-- Gizli SEO metni -->
+                <div class="d-none">
+                    İstanbul su arıtma, Avrupa yakası su filtresi, Anadolu yakası su arıtma sistemi, Başakşehir su filtresi değişimi, Beylikdüzü su arıtma, Esenyurt filtre bakımı, Küçükçekmece su arıtma servisi, Bahçelievler su filtresi, Bakırköy su arıtma sistemleri, Zeytinburnu filtre değişimi, su arıtma yedek parça İstanbul, reverse osmosis İstanbul, ultrafiltrasyon sistemi, karbon filtre değişimi, sediment filtre İstanbul
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="text-center mb-4">Su Arıtma Ürünlerimiz</h2>
+    
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="text-center p-3" style="background-color: #f8f9fa;">
+                    <img src="{{ product.image }}" class="img-fluid" alt="{{ product.name }} - İstanbul Su Arıtma Sistemi | Irmak Su Arıtma" style="max-height: 180px; width: auto;">
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">{{ product.description }}</p>
+                    <p class="card-text"><strong>Fiyat: {{ product.price }} TL</strong></p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('product_detail', product_id=product.id) }}" class="btn btn-outline-primary">Detayları Gör</a>
+                        <button class="btn btn-success" onclick="buyNow('{{ product.name }}', '{{ product.price }}')">
+                            <i class="fas fa-credit-card me-2"></i>Hemen Satın Al
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function buyNow(productName, price) {
+    // Ödeme modalını aç
+    showPaymentModal(productName, price);
+}
+
+function showPaymentModal(productName, price) {
+    const modal = `
+        <div class="modal fade" id="paymentModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">💳 Güvenli Ödeme</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="text-center mb-3">
+                            <h6>${productName}</h6>
+                            <h4 class="text-success">${price} TL</h4>
+                        </div>
+                        
+                        <div class="payment-options">
+                            <button class="btn btn-primary w-100 mb-2" onclick="payWithCard()">
+                                <i class="fas fa-credit-card me-2"></i>Kredi Kartı ile Öde
+                            </button>
+                            <button class="btn btn-success w-100 mb-2" onclick="payWithWhatsApp('${productName}', '${price}')">
+                                <i class="fab fa-whatsapp me-2"></i>WhatsApp ile Sipariş Ver
+                            </button>
+                            <button class="btn btn-info w-100" onclick="callForOrder()">
+                                <i class="fas fa-phone me-2"></i>Telefon ile Sipariş Ver
+                            </button>
+                        </div>
+                        
+                        <div class="mt-3 text-center">
+                            <small class="text-muted">
+                                🔒 SSL ile korumalı ödeme<br>
+                                💳 Tüm kredi kartları kabul edilir<br>
+                                🚚 Ücretsiz montaj dahil
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Modal'ı sayfaya ekle
+    document.body.insertAdjacentHTML('beforeend', modal);
+    
+    // Modal'ı göster
+    const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+    paymentModal.show();
+    
+    // Modal kapandığında DOM'dan kaldır
+    document.getElementById('paymentModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+function payWithCard() {
+    // iyzico ödeme sayfasına yönlendir (gerçek entegrasyon sonrası)
+    alert('🔄 Kredi kartı ödeme sistemi hazırlanıyor...\n\n✅ SSL güvenliği\n✅ 3D Secure\n✅ Anında onay\n\nŞimdilik WhatsApp ile sipariş verebilirsiniz!');
+}
+
+function payWithWhatsApp(productName, price) {
+    const message = encodeURIComponent(`🛒 SİPARİŞ DETAYI\n\n📦 Ürün: ${productName}\n💰 Fiyat: ${price} TL\n🚚 Ücretsiz montaj dahil\n\nSipariş vermek istiyorum. Ödeme seçeneklerini öğrenebilir miyim?`);
+    window.open(`https://wa.me/905448113105?text=${message}`, '_blank');
+}
+
+function callForOrder() {
+    alert('📞 Hemen arayın: 0544 811 31 05\n\n⏰ Çalışma saatleri:\nPazartesi - Cumartesi: 09:00 - 18:00');
+}
+</script>
+{% endblock %}
